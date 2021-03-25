@@ -7,12 +7,15 @@ import com.google.android.material.snackbar.Snackbar;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.FragmentTransitionImpl;
 
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.ViewGroup;
 
 public class MainActivity extends AppCompatActivity {
     private LoginFragment loginFragment = null;
@@ -24,13 +27,20 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        loginFragment = (LoginFragment) getSupportFragmentManager().findFragmentById(R.id.LoginFragment);
+        loginFragment = (LoginFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_login);
+
         if (loginFragment == null) {
-            getSupportFragmentManager().beginTransaction().
-                    replace(R.id.LoginFragment, new LoginFragment(), "LOGINFRAGMENT").
+//            loginFragment = LoginFragment.getInstance();
+            getSupportFragmentManager().beginTransaction().add(R.id.fragment_login, new LoginFragment(), "LOGINFRAGMENT").
                     commit();
         }
     }
+
+    public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
+        // Defines the xml file for the fragment
+        System.out.println("Hit onCreateView");
+        return inflater.inflate(R.layout.fragment_login, parent, false);
+     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -53,4 +63,6 @@ public class MainActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
+
 }

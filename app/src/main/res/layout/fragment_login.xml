@@ -8,8 +8,8 @@
     android:layout_height="match_parent"
     tools:context=".LoginFragment"
     android:layout_margin="16dp"
-    android:stretchColumns="3">
-
+    android:stretchColumns="3"
+    android:name="fragment_login">
 
     <TableRow android:padding="4dip"
         android:layout_width="match_parent"
@@ -130,7 +130,8 @@
             android:inputType="textEmailAddress" />
     </TableRow>
 
-    <TableRow android:padding="4dip"
+    <TableRow
+        android:padding="4dip"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
         <RadioGroup xmlns:android="http://schemas.android.com/apk/res/android"
@@ -139,20 +140,21 @@
             android:orientation="vertical">
 
             <RadioButton
+                android:text="Male"
                 android:id="@+id/genderMale"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Female"
                 android:clickable="true"
-                android:onClick="onRadioButtonClicked"/>
+                android:checked="true" />
+<!--                android:onClick="onRadioButtonClicked"/>-->
 
             <RadioButton
-                android:text="Male"
+                android:text="Female"
                 android:id="@+id/genderFemale"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:clickable="true"
-                android:onClick="onRadioButtonClicked" />
+                android:checked="false" />
 
         </RadioGroup>
 
@@ -179,6 +181,15 @@
             android:layout_height="wrap_content"
             android:text="Register"
             app:backgroundTint="#2196F3" />
+
+
     </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/fragment_login"
+        android:tag="@+id/fragment_login"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" >
+    </FrameLayout>
 
 </TableLayout>
