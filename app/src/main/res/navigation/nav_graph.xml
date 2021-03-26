@@ -14,4 +14,9 @@
         android:name="com.example.familymap.LoginFragment"
         android:label="@string/loginFragmentLabel"
         tools:layout="@layout/fragment_login" />
+    <fragment
+        android:id="@+id/MapFragment"
+        android:name="com.example.familymap.MapFragment"
+        android:label="@string/mapFragmentLabel"
+        tools:layout="@layout/fragment_map" />
 </navigation>

@@ -23,17 +23,23 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.channels.AsynchronousChannelGroup;
 
+import Models.AuthToken;
+import Models.Person;
 import Request.LoginRequest;
 import Request.RegisterRequest;
 import Result.LoginResult;
+import Result.PersonListResult;
+import Result.RegisterResult;
 import Utils.StringUtil;
 
 
 public class LoginFragment extends Fragment {
-    EditText serverHost, serverPort, username, password, firstName, lastName, email;
-    RadioButton genderMale, genderFemale;
-    Button registerButton, loginButton;
+    private EditText serverHost, serverPort, username, password, firstName, lastName, email;
+    private RadioButton genderMale, genderFemale;
+    private Button registerButton, loginButton;
+    private LoginResult loginResult = null;
 
 //    private static LoginFragment loginFragment;
 //    public static LoginFragment getInstance() {
@@ -105,36 +111,33 @@ public class LoginFragment extends Fragment {
                     LoginRequest loginRequest = new LoginRequest(username.getText().toString(), password.getText().toString());
                     LoginTask loginTask = new LoginTask();
                     loginTask.execute(loginRequest);
-
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         });
 
-//        registerButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                Toast.makeText(getContext(), "Attempting to register", Toast.LENGTH_SHORT).show();
-//                try {
-//                    RegisterRequest registerRequest = new RegisterRequest();
-//                    LoginTask loginTask = new LoginTask();
-//                    loginTask.execute(loginRequest);
-//
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        });
+        registerButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Toast.makeText(getContext(), "Attempting to register", Toast.LENGTH_SHORT).show();
+                try {
+                    RegisterRequest registerRequest = new RegisterRequest(username.getText().toString(), password.getText().toString(), email.getText().toString(),
+                            firstName.getText().toString(), lastName.getText().toString(), genderFemale.isChecked() ? "f" : "m");
+                    RegisterTask registerTask = new RegisterTask();
+                    registerTask.execute(registerRequest);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
     private class LoginTask extends AsyncTask<LoginRequest, Integer, LoginResult> {
         @Override
         protected LoginResult doInBackground(LoginRequest... loginRequests) {
-            LoginResult loginResult = null;
             try {
-                //TODO fix this url
-                URL url = new URL( "http://10.0.2.2:8080/user/login");
+                URL url = new URL( "http://" + serverHost.getText().toString() + ":" + serverPort.getText().toString() + "/user/login");
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                 connection.setRequestMethod("POST");
                 connection.setDoOutput(true);
@@ -150,6 +153,9 @@ public class LoginFragment extends Fragment {
                     String json = StringUtil.getStringFromInputStream(connection.getInputStream());
                     loginResult = gson.fromJson(json, LoginResult.class);
                 }
+                else {
+                    Toast.makeText(getContext(), "Error processing request, please try again", Toast.LENGTH_SHORT).show();
+                }
             } catch (MalformedURLException e) {
                 e.printStackTrace();
             } catch (IOException e) {
@@ -162,9 +168,114 @@ public class LoginFragment extends Fragment {
         public void onPostExecute(LoginResult loginResult) {
             if (loginResult.success) {
                 Toast.makeText(getContext(), "Login was successful", Toast.LENGTH_SHORT).show();
+
+                FamilyDataTask familyDataTask = new FamilyDataTask();
+                familyDataTask.execute(loginResult.authtoken);
+
+//                ((MainActivity) getActivity()).showMap();
             }
             else {
                 Toast.makeText(getContext(), "Login was unsuccessful", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    private class RegisterTask extends AsyncTask<RegisterRequest, Integer, RegisterResult> {
+        @Override
+        protected RegisterResult doInBackground(RegisterRequest... registerRequests) {
+            RegisterResult registerResult = null;
+            try {
+                URL url = new URL( "http://" + serverHost.getText().toString() + ":" + serverPort.getText().toString() + "/user/register");
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("POST");
+                connection.setDoOutput(true);
+
+                connection.connect();
+
+                Gson gson = new Gson();
+                StringUtil.writeStringToStream(gson.toJson(registerRequests[0]), connection.getOutputStream());
+                connection.getOutputStream().close();
+
+                int responseCode = connection.getResponseCode();
+                if (responseCode == HttpURLConnection.HTTP_OK) {
+                    String json = StringUtil.getStringFromInputStream(connection.getInputStream());
+                    registerResult = gson.fromJson(json, RegisterResult.class);
+                }
+                else {
+                    Toast.makeText(getContext(), "Error processing request, please try again", Toast.LENGTH_SHORT).show();
+                }
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            return registerResult;
+        }
+
+        public void onPostExecute(RegisterResult registerResult) {
+            if (registerResult.success) {
+                Toast.makeText(getContext(), "Registration was successful", Toast.LENGTH_SHORT).show();
+                FamilyDataTask familyDataTask = new FamilyDataTask();
+                familyDataTask.execute(registerResult.authtoken);
+
+//                ((MainActivity) getActivity()).showMap();
+            }
+            else {
+                Toast.makeText(getContext(), "Registration was unsuccessful", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    private class FamilyDataTask extends AsyncTask<String, Integer, PersonListResult> {
+        @Override
+        protected PersonListResult doInBackground(String... authTokens) {
+            PersonListResult personListResult = null;
+
+            try {
+                URL url = new URL( "http://" + serverHost.getText().toString() + ":" + serverPort.getText().toString() + "/person");
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("GET");
+                connection.setDoOutput(false);
+
+                connection.addRequestProperty("Authorization", authTokens[0]);
+
+                connection.connect();
+
+//                StringUtil.writeStringToStream(gson.toJson(authTokens[0]), connection.getOutputStream());
+//                connection.getOutputStream().close();
+
+                int responseCode = connection.getResponseCode();
+                if (responseCode == HttpURLConnection.HTTP_OK) {
+                    Gson gson = new Gson();
+                    String json = StringUtil.getStringFromInputStream(connection.getInputStream());
+                    personListResult = gson.fromJson(json, PersonListResult.class);
+                }
+                else {
+                    Toast.makeText(getContext(), "Error processing request, please try again", Toast.LENGTH_SHORT).show();
+                }
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            return personListResult;
+        }
+
+        public void onPostExecute(PersonListResult personListResult) {
+            if (personListResult.isSuccess()) {
+                if (personListResult.getData().size() == 0) {
+                    Toast.makeText(getContext(), "No family for logged in user.", Toast.LENGTH_LONG).show();
+                }
+                else {
+                    Toast.makeText(getContext(), ((Person) personListResult.getData().get(0)).getFirstName()
+                            + " " + ((Person) personListResult.getData().get(0)).getLastName() + " is logged in.", Toast.LENGTH_LONG).show();
+                    ((MainActivity) getActivity()).showMap();
+                }
+            }
+            else {
+                Toast.makeText(getContext(), "Displaying logged in user was unsuccessful", Toast.LENGTH_SHORT).show();
             }
         }
     }

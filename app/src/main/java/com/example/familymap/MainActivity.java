@@ -2,14 +2,10 @@ package com.example.familymap;
 
 import android.os.Bundle;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
-
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.fragment.app.FragmentTransitionImpl;
+import androidx.fragment.app.FragmentManager;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 
@@ -19,6 +15,7 @@ import android.view.ViewGroup;
 
 public class MainActivity extends AppCompatActivity {
     private LoginFragment loginFragment = null;
+    private MapFragment mapFragment = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,8 +27,8 @@ public class MainActivity extends AppCompatActivity {
         loginFragment = (LoginFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_login);
 
         if (loginFragment == null) {
-//            loginFragment = LoginFragment.getInstance();
-            getSupportFragmentManager().beginTransaction().add(R.id.fragment_login, new LoginFragment(), "LOGINFRAGMENT").
+            loginFragment = new LoginFragment();
+            getSupportFragmentManager().beginTransaction().add(R.id.fragment_login, loginFragment, "LOGINFRAGMENT").
                     commit();
         }
     }
@@ -64,5 +61,16 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    public void showMap() {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        fragmentManager.beginTransaction().remove(loginFragment).commit();
+
+//        mapFragment = (MapFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_map);
+//
+//        if (mapFragment == null) {
+//            fragmentManager.beginTransaction().add(R.id.fragment_map, new MapFragment(), "MAPFRAGMENT").
+//                    commit();
+//        }
+    }
 
 }
