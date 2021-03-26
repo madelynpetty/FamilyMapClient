@@ -18,12 +18,14 @@ import androidx.fragment.app.Fragment;
 import com.google.gson.Gson;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
 import Request.LoginRequest;
+import Request.RegisterRequest;
 import Result.LoginResult;
 import Utils.StringUtil;
 
@@ -110,17 +112,29 @@ public class LoginFragment extends Fragment {
             }
         });
 
-
+//        registerButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                Toast.makeText(getContext(), "Attempting to register", Toast.LENGTH_SHORT).show();
+//                try {
+//                    RegisterRequest registerRequest = new RegisterRequest();
+//                    LoginTask loginTask = new LoginTask();
+//                    loginTask.execute(loginRequest);
+//
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        });
     }
 
     private class LoginTask extends AsyncTask<LoginRequest, Integer, LoginResult> {
-
         @Override
-        protected LoginResult doInBackground(LoginRequest... loginRequest) {
+        protected LoginResult doInBackground(LoginRequest... loginRequests) {
             LoginResult loginResult = null;
             try {
                 //TODO fix this url
-                URL url = new URL("http://10.0.2.2:8080/user/login");
+                URL url = new URL( "http://10.0.2.2:8080/user/login");
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                 connection.setRequestMethod("POST");
                 connection.setDoOutput(true);
@@ -128,11 +142,14 @@ public class LoginFragment extends Fragment {
                 connection.connect();
 
                 Gson gson = new Gson();
-                StringUtil.writeStringToStream(gson.toJson(loginRequest), connection.getOutputStream());
+                StringUtil.writeStringToStream(gson.toJson(loginRequests[0]), connection.getOutputStream());
                 connection.getOutputStream().close();
 
-                String json = StringUtil.getStringFromInputStream(connection.getInputStream());
-                loginResult = gson.fromJson(json, LoginResult.class);
+                int responseCode = connection.getResponseCode();
+                if (responseCode == HttpURLConnection.HTTP_OK) {
+                    String json = StringUtil.getStringFromInputStream(connection.getInputStream());
+                    loginResult = gson.fromJson(json, LoginResult.class);
+                }
             } catch (MalformedURLException e) {
                 e.printStackTrace();
             } catch (IOException e) {
