@@ -2,6 +2,9 @@ package com.example.familymap;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -14,6 +17,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 
 import com.google.gson.Gson;
 
@@ -40,14 +44,6 @@ public class LoginFragment extends Fragment {
     private RadioButton genderMale, genderFemale;
     private Button registerButton, loginButton;
     private LoginResult loginResult = null;
-
-//    private static LoginFragment loginFragment;
-//    public static LoginFragment getInstance() {
-//        if (loginFragment != null) {
-//            loginFragment = new LoginFragment();
-//        }
-//        return loginFragment;
-//    }
 
     @Override
     public View onCreateView(
@@ -103,6 +99,10 @@ public class LoginFragment extends Fragment {
         lastName.addTextChangedListener(textWatcher);
         email.addTextChangedListener(textWatcher);
 
+        //TODO DELETE THESE OUT LATER
+        serverHost.setText("10.0.2.2");
+        serverPort.setText("8080");
+
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -154,7 +154,18 @@ public class LoginFragment extends Fragment {
                     loginResult = gson.fromJson(json, LoginResult.class);
                 }
                 else {
-                    Toast.makeText(getContext(), "Error processing request, please try again", Toast.LENGTH_SHORT).show();
+                    Thread thread = new Thread() {
+                        public void run() {
+                            Looper.prepare();
+                            Handler mHandler = new Handler() {
+                                public void handleMessage(Message msg) {
+                                    Toast.makeText(getContext(), "Error processing request, please try again", Toast.LENGTH_SHORT).show();
+                                }
+                            };
+                            Looper.loop();
+                        }
+                    };
+                    thread.start();
                 }
             } catch (MalformedURLException e) {
                 e.printStackTrace();
@@ -165,17 +176,20 @@ public class LoginFragment extends Fragment {
             return loginResult;
         }
 
+        @Override
         public void onPostExecute(LoginResult loginResult) {
-            if (loginResult.success) {
+            if (loginResult == null) {
+                Toast.makeText(getContext(), "Login was unsuccessful", Toast.LENGTH_SHORT).show();
+            }
+            else if (loginResult.success) {
                 Toast.makeText(getContext(), "Login was successful", Toast.LENGTH_SHORT).show();
 
                 FamilyDataTask familyDataTask = new FamilyDataTask();
                 familyDataTask.execute(loginResult.authtoken);
-
-//                ((MainActivity) getActivity()).showMap();
             }
             else {
                 Toast.makeText(getContext(), "Login was unsuccessful", Toast.LENGTH_SHORT).show();
+
             }
         }
     }
@@ -202,7 +216,18 @@ public class LoginFragment extends Fragment {
                     registerResult = gson.fromJson(json, RegisterResult.class);
                 }
                 else {
-                    Toast.makeText(getContext(), "Error processing request, please try again", Toast.LENGTH_SHORT).show();
+                    Thread thread = new Thread() {
+                        public void run() {
+                            Looper.prepare();
+                            Handler mHandler = new Handler() {
+                                public void handleMessage(Message msg) {
+                                    Toast.makeText(getContext(), "Error processing request, please try again", Toast.LENGTH_SHORT).show();
+                                }
+                            };
+                            Looper.loop();
+                        }
+                    };
+                    thread.start();
                 }
             } catch (MalformedURLException e) {
                 e.printStackTrace();
@@ -213,13 +238,17 @@ public class LoginFragment extends Fragment {
             return registerResult;
         }
 
+        @Override
         public void onPostExecute(RegisterResult registerResult) {
-            if (registerResult.success) {
+            if (registerResult == null) {
+                Toast.makeText(getContext(), "Registration was unsuccessful", Toast.LENGTH_SHORT).show();
+            }
+            else if (registerResult.success) {
                 Toast.makeText(getContext(), "Registration was successful", Toast.LENGTH_SHORT).show();
                 FamilyDataTask familyDataTask = new FamilyDataTask();
                 familyDataTask.execute(registerResult.authtoken);
 
-//                ((MainActivity) getActivity()).showMap();
+                ((MainActivity) getActivity()).showMap();
             }
             else {
                 Toast.makeText(getContext(), "Registration was unsuccessful", Toast.LENGTH_SHORT).show();
@@ -242,9 +271,6 @@ public class LoginFragment extends Fragment {
 
                 connection.connect();
 
-//                StringUtil.writeStringToStream(gson.toJson(authTokens[0]), connection.getOutputStream());
-//                connection.getOutputStream().close();
-
                 int responseCode = connection.getResponseCode();
                 if (responseCode == HttpURLConnection.HTTP_OK) {
                     Gson gson = new Gson();
@@ -252,7 +278,18 @@ public class LoginFragment extends Fragment {
                     personListResult = gson.fromJson(json, PersonListResult.class);
                 }
                 else {
-                    Toast.makeText(getContext(), "Error processing request, please try again", Toast.LENGTH_SHORT).show();
+                    Thread thread = new Thread() {
+                        public void run() {
+                            Looper.prepare();
+                            Handler mHandler = new Handler() {
+                                public void handleMessage(Message msg) {
+                                    Toast.makeText(getContext(), "Error processing request, please try again", Toast.LENGTH_SHORT).show();
+                                }
+                            };
+                            Looper.loop();
+                        }
+                    };
+                    thread.start();
                 }
             } catch (MalformedURLException e) {
                 e.printStackTrace();
@@ -263,6 +300,7 @@ public class LoginFragment extends Fragment {
             return personListResult;
         }
 
+        @Override
         public void onPostExecute(PersonListResult personListResult) {
             if (personListResult.isSuccess()) {
                 if (personListResult.getData().size() == 0) {
@@ -271,6 +309,7 @@ public class LoginFragment extends Fragment {
                 else {
                     Toast.makeText(getContext(), ((Person) personListResult.getData().get(0)).getFirstName()
                             + " " + ((Person) personListResult.getData().get(0)).getLastName() + " is logged in.", Toast.LENGTH_LONG).show();
+
                     ((MainActivity) getActivity()).showMap();
                 }
             }
@@ -296,5 +335,4 @@ public class LoginFragment extends Fragment {
             registerButton.setEnabled(false);
         }
     }
-
 }

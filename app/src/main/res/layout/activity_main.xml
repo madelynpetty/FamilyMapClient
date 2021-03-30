@@ -21,4 +21,9 @@
     </com.google.android.material.appbar.AppBarLayout>
     <include layout="@layout/content_main" />
 
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/main_placeholder" />
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
