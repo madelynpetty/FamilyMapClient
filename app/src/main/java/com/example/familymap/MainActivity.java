@@ -6,7 +6,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -15,33 +14,32 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
-
-import java.util.Map;
+import com.joanzapata.iconify.Iconify;
+import com.joanzapata.iconify.fonts.FontAwesomeModule;
 
 public class MainActivity extends AppCompatActivity {
     private LoginFragment loginFragment = null;
-    private MapFragment mapFragment = null;
+    private MapsFragment mapsFragment = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        loginFragment = (LoginFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_login);
+        Iconify.with(new FontAwesomeModule());
 
         if (loginFragment == null) {
             loginFragment = new LoginFragment();
-            getSupportFragmentManager().beginTransaction().add(R.id.fragment_login, loginFragment, "LOGINFRAGMENT")
-                    .commit();
+//            getSupportFragmentManager().beginTransaction().replace(R.id.main_placeholder, loginFragment).commit();
         }
     }
 
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
         // Defines the xml file for the fragment
         System.out.println("Hit onCreateView");
-//        return inflater.inflate(R.layout.fragment_login, parent, false);
         return inflater.inflate(R.layout.fragment_login, parent, false);
      }
 
@@ -68,15 +66,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void showMap() {
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        Fragment fragment = fragmentManager.findFragmentById(R.id.fragment_login);
+//        FragmentManager fragmentManager = getSupportFragmentManager();
+//        Fragment fragment = fragmentManager.findFragmentById(R.id.fragment_login);
+//
+//        fragmentManager.beginTransaction().remove(fragment).commit();
+//
+//        getSupportFragmentManager().beginTransaction().add(R.id.fragment_map, new MapFragment(), "MAPFRAGMENT")
+//                .commit();
 
-        fragmentManager.beginTransaction().remove(fragment).commit();
-
-        getSupportFragmentManager().beginTransaction().add(R.id.fragment_map, new MapFragment(), "MAPFRAGMENT")
-                .commit();
-
-        setContentView(R.layout.fragment_map);
+        if (mapsFragment == null) {
+            mapsFragment = new MapsFragment();
+        }
+        getSupportFragmentManager().beginTransaction().replace(R.id.main_placeholder, mapsFragment).commit();
     }
 
 }

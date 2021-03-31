@@ -17,19 +17,14 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
 
 import com.google.gson.Gson;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.channels.AsynchronousChannelGroup;
 
-import Models.AuthToken;
 import Models.Person;
 import Request.LoginRequest;
 import Request.RegisterRequest;
@@ -50,6 +45,7 @@ public class LoginFragment extends Fragment {
             LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState
     ) {
+         getActivity().setTitle("Family Map Login");
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_login, container, false);
     }
@@ -67,7 +63,6 @@ public class LoginFragment extends Fragment {
         genderMale = view.findViewById(R.id.genderMale);
         genderFemale = view.findViewById(R.id.genderFemale);
 
-
         registerButton = view.findViewById(R.id.registerButton);
         loginButton = view.findViewById(R.id.loginButton);
 
@@ -76,9 +71,7 @@ public class LoginFragment extends Fragment {
 
         TextWatcher textWatcher = new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
@@ -86,9 +79,7 @@ public class LoginFragment extends Fragment {
             }
 
             @Override
-            public void afterTextChanged(Editable s) {
-
-            }
+            public void afterTextChanged(Editable s) {}
         };
 
         serverHost.addTextChangedListener(textWatcher);
