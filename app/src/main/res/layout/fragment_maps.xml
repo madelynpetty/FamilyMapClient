@@ -8,12 +8,3 @@
     android:layout_height="match_parent"
     tools:context=".MapsFragment" />
 
-<!--THIS IS THE FRAGMENT_MAP FILE-->
-
-<!--<FrameLayout-->
-<!--    android:id="@+id/fragment_map"-->
-<!--    android:tag="@+id/fragment_map"-->
-<!--    android:layout_width="match_parent"-->
-<!--    android:layout_height="match_parent"-->
-<!--    android:name="fragment_map" >-->
-<!--</FrameLayout>-->

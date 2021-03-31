@@ -295,11 +295,11 @@ public class LoginFragment extends Fragment {
         public void onPostExecute(PersonListResult personListResult) {
             if (personListResult.isSuccess()) {
                 if (personListResult.getData().size() == 0) {
-                    Toast.makeText(getContext(), "No family for logged in user.", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getContext(), "No family for logged in user.", Toast.LENGTH_SHORT).show();
                 }
                 else {
                     Toast.makeText(getContext(), ((Person) personListResult.getData().get(0)).getFirstName()
-                            + " " + ((Person) personListResult.getData().get(0)).getLastName() + " is logged in.", Toast.LENGTH_LONG).show();
+                            + " " + ((Person) personListResult.getData().get(0)).getLastName() + " is logged in.", Toast.LENGTH_SHORT).show();
 
                     ((MainActivity) getActivity()).showMap();
                 }

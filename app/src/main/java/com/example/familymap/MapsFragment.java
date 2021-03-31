@@ -40,6 +40,8 @@ public class MapsFragment extends Fragment {
             LatLng sydney = new LatLng(-34, 151);
             googleMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
             googleMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+
+            //method called placePins
         }
     };
 
@@ -51,24 +53,26 @@ public class MapsFragment extends Fragment {
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.map_menu, menu);
         super.onCreateOptionsMenu(menu, inflater);
-        menu.findItem(R.id.action_search).setIcon( new IconDrawable(getActivity(), FontAwesomeIcons.fa_search).colorRes(R.color.white).sizeDp(40));
-        menu.findItem(R.id.action_settings).setIcon( new IconDrawable(getActivity(), FontAwesomeIcons.fa_gear).colorRes(R.color.white).sizeDp(40));
+        inflater.inflate(R.menu.map_menu, menu);
+        menu.findItem(R.id.map_search).setIcon( new IconDrawable(getActivity(), FontAwesomeIcons.fa_search).colorRes(R.color.white).sizeDp(40));
+        menu.findItem(R.id.map_settings).setIcon( new IconDrawable(getActivity(), FontAwesomeIcons.fa_gear).colorRes(R.color.white).sizeDp(40));
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        super.onOptionsItemSelected(item);
         // Handle item selection
         switch (item.getItemId()) {
-            case R.id.action_search:
+            case R.id.map_search:
                 Toast.makeText(getActivity(), "Calls Search", Toast.LENGTH_SHORT).show();
                 return true;
-            case R.id.action_settings:
+            case R.id.map_settings:
                 Toast.makeText(getActivity(), "Calls Settings", Toast.LENGTH_SHORT).show();
                 return true;
             default:
-                return super.onOptionsItemSelected(item);
+                Toast.makeText(getActivity(), "Invalid Option", Toast.LENGTH_SHORT).show();
+                return false;
         }
     }
 

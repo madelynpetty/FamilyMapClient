@@ -2,13 +2,13 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/action_search"
-        android:title="@string/action_search"
+        android:id="@+id/map_search"
+        android:title="@string/map_search"
         android:icon="@drawable/ic_launcher_background"
         app:showAsAction="always"/>
     <item
-        android:id="@+id/action_settings"
-        android:title="@string/action_settings"
+        android:id="@+id/map_settings"
+        android:title="@string/map_settings"
         android:icon="@drawable/ic_launcher_background"
         app:showAsAction="always"/>
 </menu>

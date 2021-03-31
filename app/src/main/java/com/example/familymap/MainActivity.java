@@ -58,8 +58,11 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        if (id == R.id.map_settings) {
+            return false;
+        }
+        else if (id == R.id.map_search){
+            return false;
         }
 
         return super.onOptionsItemSelected(item);
