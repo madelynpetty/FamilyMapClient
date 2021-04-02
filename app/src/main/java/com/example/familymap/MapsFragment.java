@@ -4,7 +4,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -19,8 +23,19 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.gson.Gson;
 import com.joanzapata.iconify.IconDrawable;
 import com.joanzapata.iconify.fonts.FontAwesomeIcons;
+
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+
+import Models.Event;
+import Result.EventListResult;
+import Result.LoginResult;
+import Utils.StringUtil;
 
 public class MapsFragment extends Fragment {
 
@@ -37,11 +52,9 @@ public class MapsFragment extends Fragment {
          */
         @Override
         public void onMapReady(GoogleMap googleMap) {
-            LatLng sydney = new LatLng(-34, 151);
-            googleMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-            googleMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
-
-            //method called placePins
+            LatLng saltLakeCity = new LatLng(-40, 112);
+            googleMap.moveCamera(CameraUpdateFactory.newLatLng(saltLakeCity));
+            placePins(googleMap);
         }
     };
 
@@ -92,6 +105,18 @@ public class MapsFragment extends Fragment {
                 (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.fragment_maps);
         if (mapFragment != null) {
             mapFragment.getMapAsync(callback);
+        }
+    }
+
+    private void placePins(GoogleMap googleMap) {
+        if (((MainActivity) getActivity()).eventListResult == null) {
+            Toast.makeText(getContext(), "No events yet", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        for (Event event : ((MainActivity) getActivity()).eventListResult.getData()) {
+            LatLng pin = new LatLng(event.getLatitude(), event.getLongitude());
+            googleMap.addMarker(new MarkerOptions().position(pin).title(event.getEventType()));
         }
     }
 }

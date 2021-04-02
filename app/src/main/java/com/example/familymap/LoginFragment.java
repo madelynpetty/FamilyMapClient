@@ -28,9 +28,11 @@ import java.net.URL;
 import Models.Person;
 import Request.LoginRequest;
 import Request.RegisterRequest;
+import Result.EventListResult;
 import Result.LoginResult;
 import Result.PersonListResult;
 import Result.RegisterResult;
+import Utils.Globals;
 import Utils.StringUtil;
 
 
@@ -38,7 +40,7 @@ public class LoginFragment extends Fragment {
     private EditText serverHost, serverPort, username, password, firstName, lastName, email;
     private RadioButton genderMale, genderFemale;
     private Button registerButton, loginButton;
-    private LoginResult loginResult = null;
+    private MapsFragment mapsFragment = null;
 
     @Override
     public View onCreateView(
@@ -94,6 +96,9 @@ public class LoginFragment extends Fragment {
         serverHost.setText("10.0.2.2");
         serverPort.setText("8080");
 
+        ((MainActivity) getActivity()).serverHost = serverHost.getText().toString();
+        ((MainActivity) getActivity()).serverPort = serverPort.getText().toString();
+
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -127,6 +132,7 @@ public class LoginFragment extends Fragment {
     private class LoginTask extends AsyncTask<LoginRequest, Integer, LoginResult> {
         @Override
         protected LoginResult doInBackground(LoginRequest... loginRequests) {
+            LoginResult loginResult = null;
             try {
                 URL url = new URL( "http://" + serverHost.getText().toString() + ":" + serverPort.getText().toString() + "/user/login");
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -168,15 +174,17 @@ public class LoginFragment extends Fragment {
         }
 
         @Override
-        public void onPostExecute(LoginResult loginResult) {
-            if (loginResult == null) {
+        public void onPostExecute(LoginResult lr) {
+            if (lr == null) {
                 Toast.makeText(getContext(), "Login was unsuccessful", Toast.LENGTH_SHORT).show();
             }
-            else if (loginResult.success) {
+            else if (lr.success) {
                 Toast.makeText(getContext(), "Login was successful", Toast.LENGTH_SHORT).show();
 
+                ((MainActivity) getActivity()).setLoginResult(lr);
+
                 FamilyDataTask familyDataTask = new FamilyDataTask();
-                familyDataTask.execute(loginResult.authtoken);
+                familyDataTask.execute(lr.authtoken);
             }
             else {
                 Toast.makeText(getContext(), "Login was unsuccessful", Toast.LENGTH_SHORT).show();
@@ -185,10 +193,10 @@ public class LoginFragment extends Fragment {
         }
     }
 
-    private class RegisterTask extends AsyncTask<RegisterRequest, Integer, RegisterResult> {
+    private class RegisterTask extends AsyncTask<RegisterRequest, Integer, LoginResult> {
         @Override
-        protected RegisterResult doInBackground(RegisterRequest... registerRequests) {
-            RegisterResult registerResult = null;
+        protected LoginResult doInBackground(RegisterRequest... registerRequests) {
+            LoginResult lr = null;
             try {
                 URL url = new URL( "http://" + serverHost.getText().toString() + ":" + serverPort.getText().toString() + "/user/register");
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -204,7 +212,7 @@ public class LoginFragment extends Fragment {
                 int responseCode = connection.getResponseCode();
                 if (responseCode == HttpURLConnection.HTTP_OK) {
                     String json = StringUtil.getStringFromInputStream(connection.getInputStream());
-                    registerResult = gson.fromJson(json, RegisterResult.class);
+                    lr = gson.fromJson(json, LoginResult.class);
                 }
                 else {
                     Thread thread = new Thread() {
@@ -226,20 +234,21 @@ public class LoginFragment extends Fragment {
                 e.printStackTrace();
             }
 
-            return registerResult;
+            return lr;
         }
 
         @Override
-        public void onPostExecute(RegisterResult registerResult) {
-            if (registerResult == null) {
+        public void onPostExecute(LoginResult lr) {
+            if (lr == null) {
                 Toast.makeText(getContext(), "Registration was unsuccessful", Toast.LENGTH_SHORT).show();
             }
-            else if (registerResult.success) {
+            else if (lr.success) {
                 Toast.makeText(getContext(), "Registration was successful", Toast.LENGTH_SHORT).show();
-                FamilyDataTask familyDataTask = new FamilyDataTask();
-                familyDataTask.execute(registerResult.authtoken);
 
-                ((MainActivity) getActivity()).showMap();
+                ((MainActivity) getActivity()).setLoginResult(lr);
+
+                FamilyDataTask familyDataTask = new FamilyDataTask();
+                familyDataTask.execute(lr.authtoken);
             }
             else {
                 Toast.makeText(getContext(), "Registration was unsuccessful", Toast.LENGTH_SHORT).show();
@@ -300,12 +309,76 @@ public class LoginFragment extends Fragment {
                 else {
                     Toast.makeText(getContext(), ((Person) personListResult.getData().get(0)).getFirstName()
                             + " " + ((Person) personListResult.getData().get(0)).getLastName() + " is logged in.", Toast.LENGTH_SHORT).show();
-
-                    ((MainActivity) getActivity()).showMap();
+                    EventsTask eventsTask = new EventsTask();
+                    eventsTask.execute(((MainActivity) getActivity()).loginResult);
                 }
             }
             else {
                 Toast.makeText(getContext(), "Displaying logged in user was unsuccessful", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    private class EventsTask extends AsyncTask<LoginResult, Integer, EventListResult> {
+        @Override
+        protected EventListResult doInBackground(LoginResult... loginResults) {
+            EventListResult eventListResult = null;
+            try {
+                URL url = new URL("http://" + ((MainActivity) getActivity()).serverHost + ":" + ((MainActivity) getActivity()).serverPort + "/event");
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("GET");
+                connection.setDoOutput(false);
+
+                connection.setRequestProperty("Authorization", ((MainActivity) getActivity()).loginResult.authtoken);
+
+                connection.connect();
+
+                int responseCode = connection.getResponseCode();
+                if (responseCode == HttpURLConnection.HTTP_OK) {
+                    Gson gson = new Gson();
+                    String json = StringUtil.getStringFromInputStream(connection.getInputStream());
+                    eventListResult = gson.fromJson(json, EventListResult.class);
+                } else {
+                    Thread thread = new Thread() {
+                        public void run() {
+                            Looper.prepare();
+                            Handler mHandler = new Handler() {
+                                public void handleMessage(Message msg) {
+                                    Toast.makeText(getContext(), "Error processing request, please try again", Toast.LENGTH_SHORT).show();
+                                }
+                            };
+                            Looper.loop();
+                        }
+                    };
+                    thread.start();
+                }
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            return eventListResult;
+        }
+
+        @Override
+        public void onPostExecute(EventListResult elr) {
+            if (elr == null) {
+                Toast.makeText(getContext(), "No events retrieved for logged in user", Toast.LENGTH_SHORT).show();
+            }
+            else if (elr.isSuccess()) {
+                Toast.makeText(getContext(), "Success: Events retrieved for logged in user", Toast.LENGTH_SHORT).show();
+                ((MainActivity) getActivity()).eventListResult = elr;
+
+                if (mapsFragment == null) {
+                    mapsFragment = new MapsFragment();
+                }
+
+                ((MainActivity) getActivity()).showMap(mapsFragment);
+            }
+            else {
+                Toast.makeText(getContext(), "Event retrieval was unsuccessful", Toast.LENGTH_SHORT).show();
+
             }
         }
     }

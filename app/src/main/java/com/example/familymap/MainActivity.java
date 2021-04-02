@@ -17,9 +17,16 @@ import android.view.ViewGroup;
 import com.joanzapata.iconify.Iconify;
 import com.joanzapata.iconify.fonts.FontAwesomeModule;
 
+import Result.EventListResult;
+import Result.LoginResult;
+
 public class MainActivity extends AppCompatActivity {
     private LoginFragment loginFragment = null;
     private MapsFragment mapsFragment = null;
+    public LoginResult loginResult = null;
+    public EventListResult eventListResult = null;
+    public String serverHost = null;
+    public String serverPort = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public void showMap() {
+    public void showMap(MapsFragment mapsFragment) {
 //        FragmentManager fragmentManager = getSupportFragmentManager();
 //        Fragment fragment = fragmentManager.findFragmentById(R.id.fragment_login);
 //
@@ -76,11 +83,10 @@ public class MainActivity extends AppCompatActivity {
 //
 //        getSupportFragmentManager().beginTransaction().add(R.id.fragment_map, new MapFragment(), "MAPFRAGMENT")
 //                .commit();
-
-        if (mapsFragment == null) {
-            mapsFragment = new MapsFragment();
-        }
         getSupportFragmentManager().beginTransaction().replace(R.id.main_placeholder, mapsFragment).commit();
     }
 
+    public void setLoginResult(LoginResult lr) {
+        loginResult = lr;
+    }
 }
