@@ -19,12 +19,14 @@ import com.joanzapata.iconify.fonts.FontAwesomeModule;
 
 import Result.EventListResult;
 import Result.LoginResult;
+import Result.PersonListResult;
 
 public class MainActivity extends AppCompatActivity {
     private LoginFragment loginFragment = null;
     private MapsFragment mapsFragment = null;
     public LoginResult loginResult = null;
     public EventListResult eventListResult = null;
+    public PersonListResult personListResult = null;
     public String serverHost = null;
     public String serverPort = null;
 

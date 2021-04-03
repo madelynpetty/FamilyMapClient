@@ -4,6 +4,8 @@
     <string name="map_settings">Map Settings</string>
     <string name="map_search">Map Search</string>
 
+    <string name="footer">footer</string>
+
     <string name="loginFragmentLabel">Login Fragment</string>
     <string name="mapsFragmentLabel">Map Fragment</string>
     <!-- Preference Titles -->

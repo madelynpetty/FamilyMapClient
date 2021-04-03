@@ -4,17 +4,15 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -22,41 +20,51 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.gson.Gson;
+
 import com.joanzapata.iconify.IconDrawable;
 import com.joanzapata.iconify.fonts.FontAwesomeIcons;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-
 import Models.Event;
-import Result.EventListResult;
-import Result.LoginResult;
-import Utils.StringUtil;
+import Models.Person;
 
-public class MapsFragment extends Fragment {
+public class MapsFragment extends Fragment implements GoogleMap.OnMarkerClickListener, OnMapReadyCallback {
+    private GoogleMap googleMap = null;
 
-    private OnMapReadyCallback callback = new OnMapReadyCallback() {
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        this.googleMap = googleMap;
+        LatLng saltLakeCity = new LatLng(-40, 112);
+        googleMap.moveCamera(CameraUpdateFactory.newLatLng(saltLakeCity));
+        googleMap.setOnMarkerClickListener(this);
+        placePins(googleMap);
+    }
 
-        /**
-         * Manipulates the map once available.
-         * This callback is triggered when the map is ready to be used.
-         * This is where we can add markers or lines, add listeners or move the camera.
-         * In this case, we just add a marker near Sydney, Australia.
-         * If Google Play services is not installed on the device, the user will be prompted to
-         * install it inside the SupportMapFragment. This method will only be triggered once the
-         * user has installed Google Play services and returned to the app.
-         */
-        @Override
-        public void onMapReady(GoogleMap googleMap) {
-            LatLng saltLakeCity = new LatLng(-40, 112);
-            googleMap.moveCamera(CameraUpdateFactory.newLatLng(saltLakeCity));
-            placePins(googleMap);
+    @Override
+    public boolean onMarkerClick(Marker marker) {
+        Event event = getEvent((String) marker.getTag());
+
+        if (event != null) {
+            Person person = getPerson(event.getPersonID());
+
+            if (person != null) {
+                if (person.getGender().equals("f")) {
+                    ((ImageView) getView().findViewById(R.id.ImageField)).setImageDrawable(new IconDrawable(getActivity(), FontAwesomeIcons.fa_female).colorRes(R.color.purple_200).sizeDp(40));
+                }
+                else {
+                    ((ImageView) getView().findViewById(R.id.ImageField)).setImageDrawable(new IconDrawable(getActivity(), FontAwesomeIcons.fa_male).colorRes(R.color.teal_200).sizeDp(40));
+                }
+
+                ((TextView) getView().findViewById(R.id.NameText)).setText(person.getFirstName() + " " + person.getLastName());
+                ((TextView) getView().findViewById(R.id.EventText)).setText(event.getEventType() +
+                        ": " + event.getCity() + ", " + event.getCountry() + " (" + event.getYear() + ")");
+            }
         }
-    };
+
+        return false;
+    }
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -104,7 +112,7 @@ public class MapsFragment extends Fragment {
         SupportMapFragment mapFragment =
                 (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.fragment_maps);
         if (mapFragment != null) {
-            mapFragment.getMapAsync(callback);
+            mapFragment.getMapAsync(this);
         }
     }
 
@@ -116,7 +124,31 @@ public class MapsFragment extends Fragment {
 
         for (Event event : ((MainActivity) getActivity()).eventListResult.getData()) {
             LatLng pin = new LatLng(event.getLatitude(), event.getLongitude());
-            googleMap.addMarker(new MarkerOptions().position(pin).title(event.getEventType()));
+
+//            googleMap.addMarker(new MarkerOptions().position(pin)).setTag(event.getEventID();
+            Marker marker = googleMap.addMarker(new MarkerOptions().position(pin));
+            marker.setTag(event.getEventID());
         }
     }
+
+
+    private Event getEvent(String eventID) {
+        for (Event event : ((MainActivity) getActivity()).eventListResult.getData()) {
+            if (event.getEventID().equals(eventID)) {
+                return event;
+            }
+        }
+        return null;
+    }
+
+    private Person getPerson(String personID) {
+        for (Person person : ((MainActivity) getActivity()).personListResult.getData()) {
+            if (person.getPersonID().equals(personID)) {
+                return person;
+            }
+        }
+        return null;
+    }
+
+
 }

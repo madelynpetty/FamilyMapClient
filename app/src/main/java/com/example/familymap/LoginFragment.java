@@ -25,6 +25,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import Models.Event;
 import Models.Person;
 import Request.LoginRequest;
 import Request.RegisterRequest;
@@ -102,7 +103,7 @@ public class LoginFragment extends Fragment {
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(getContext(), "Attempting to login", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(getContext(), "Attempting to login", Toast.LENGTH_SHORT).show();
                 try {
                     LoginRequest loginRequest = new LoginRequest(username.getText().toString(), password.getText().toString());
                     LoginTask loginTask = new LoginTask();
@@ -116,7 +117,7 @@ public class LoginFragment extends Fragment {
         registerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(getContext(), "Attempting to register", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(getContext(), "Attempting to register", Toast.LENGTH_SHORT).show();
                 try {
                     RegisterRequest registerRequest = new RegisterRequest(username.getText().toString(), password.getText().toString(), email.getText().toString(),
                             firstName.getText().toString(), lastName.getText().toString(), genderFemale.isChecked() ? "f" : "m");
@@ -179,7 +180,7 @@ public class LoginFragment extends Fragment {
                 Toast.makeText(getContext(), "Login was unsuccessful", Toast.LENGTH_SHORT).show();
             }
             else if (lr.success) {
-                Toast.makeText(getContext(), "Login was successful", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(getContext(), "Login was successful", Toast.LENGTH_SHORT).show();
 
                 ((MainActivity) getActivity()).setLoginResult(lr);
 
@@ -309,6 +310,8 @@ public class LoginFragment extends Fragment {
                 else {
                     Toast.makeText(getContext(), ((Person) personListResult.getData().get(0)).getFirstName()
                             + " " + ((Person) personListResult.getData().get(0)).getLastName() + " is logged in.", Toast.LENGTH_SHORT).show();
+                    ((MainActivity) getActivity()).personListResult = personListResult;
+
                     EventsTask eventsTask = new EventsTask();
                     eventsTask.execute(((MainActivity) getActivity()).loginResult);
                 }
@@ -367,7 +370,7 @@ public class LoginFragment extends Fragment {
                 Toast.makeText(getContext(), "No events retrieved for logged in user", Toast.LENGTH_SHORT).show();
             }
             else if (elr.isSuccess()) {
-                Toast.makeText(getContext(), "Success: Events retrieved for logged in user", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(getContext(), "Success: Events retrieved for logged in user", Toast.LENGTH_SHORT).show();
                 ((MainActivity) getActivity()).eventListResult = elr;
 
                 if (mapsFragment == null) {
