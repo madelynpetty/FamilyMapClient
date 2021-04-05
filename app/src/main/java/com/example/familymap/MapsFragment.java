@@ -20,6 +20,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -117,6 +118,30 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMarkerClickLis
         }
     }
 
+    private float getEventPin(Event event) {
+        float birthColor = BitmapDescriptorFactory.HUE_GREEN;
+        float baptismColor = BitmapDescriptorFactory.HUE_BLUE;
+        float deathColor = BitmapDescriptorFactory.HUE_ORANGE;
+        float marriageColor = BitmapDescriptorFactory.HUE_MAGENTA;
+        float errorColor = BitmapDescriptorFactory.HUE_RED;
+
+        if (event.getEventType().equals("birth")) {
+            return birthColor;
+        }
+        else if (event.getEventType().equals("baptism")) {
+            return baptismColor;
+        }
+        else if (event.getEventType().equals("death")) {
+            return deathColor;
+        }
+        else if (event.getEventType().equals("marriage")) {
+            return marriageColor;
+        }
+        else {
+            return errorColor;
+        }
+    }
+
     private void placePins(GoogleMap googleMap) {
         if (((MainActivity) getActivity()).eventListResult == null) {
             Toast.makeText(getContext(), "No events yet", Toast.LENGTH_SHORT).show();
@@ -126,8 +151,7 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMarkerClickLis
         for (Event event : ((MainActivity) getActivity()).eventListResult.getData()) {
             LatLng pin = new LatLng(event.getLatitude(), event.getLongitude());
 
-//            googleMap.addMarker(new MarkerOptions().position(pin)).setTag(event.getEventID();
-            Marker marker = googleMap.addMarker(new MarkerOptions().position(pin));
+            Marker marker = googleMap.addMarker(new MarkerOptions().position(pin).icon(BitmapDescriptorFactory.defaultMarker(getEventPin(event))));
             marker.setTag(event.getEventID());
         }
     }
