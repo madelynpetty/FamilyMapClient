@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -89,7 +90,7 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMarkerClickLis
                 Toast.makeText(getActivity(), "Calls Search", Toast.LENGTH_SHORT).show();
                 return true;
             case R.id.map_settings:
-                Toast.makeText(getActivity(), "Calls Settings", Toast.LENGTH_SHORT).show();
+                ((MainActivity) getActivity()).showSettings();
                 return true;
             default:
                 Toast.makeText(getActivity(), "Invalid Option", Toast.LENGTH_SHORT).show();
@@ -149,6 +150,8 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMarkerClickLis
         }
         return null;
     }
+
+
 
 
 }

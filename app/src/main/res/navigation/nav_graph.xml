@@ -21,6 +21,11 @@
         tools:layout="@layout/fragment_maps" />
     <fragment
         android:id="@+id/settingsFragment"
-        android:name="com.example.familymap.SettingsFragment"
+        android:name="com.example.familymap.SettingsActivity"
         android:label="SettingsFragment" />
+    <fragment
+        android:id="@+id/settingsFragment2"
+        android:name="com.example.familymap.SettingsActivity"
+        android:label="fragment_settings2"
+        tools:layout="@layout/activity_settings" />
 </navigation>

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".SettingsActivity">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:theme="@style/Theme.FamilyMap.AppBarOverlay">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="#2196F3"
+            app:popupTheme="@style/Theme.FamilyMap.PopupOverlay" />
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <TextView
+        android:id="@+id/lifeStoryLines"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:text="Life Story Lines" />
+
+<!--    <TextView-->
+<!--        android:id="@+id/familyTreeLines"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent"-->
+<!--        android:text="Family Tree Lines" />-->
+
+<!--    <TextView-->
+<!--        android:id="@+id/spouseLines"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent"-->
+<!--        android:text="Spouse Lines" />-->
+
+<!--    <TextView-->
+<!--        android:id="@+id/fathersSide"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent"-->
+<!--        android:text="Father's Side" />-->
+
+<!--    <TextView-->
+<!--        android:id="@+id/maleEvents"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent"-->
+<!--        android:text="Male Events" >-->
+
+<!--        <TextView-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="match_parent"-->
+<!--            android:text="FILTER EVENTS BASED ON GENDER"-->
+<!--            android:textSize="32dp"/>-->
+
+<!--    </TextView>-->
+
+<!--    <TextView-->
+<!--        android:id="@+id/femaleEvents"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent"-->
+<!--        android:text="Female Events" />-->
+
+<!--    <TextView-->
+<!--        android:id="@+id/mothersSide"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent"-->
+<!--        android:text="Mother's Side" />-->
+
+<!--    <LinearLayout-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="125dp"-->
+<!--        android:gravity="center"-->
+<!--        android:orientation="horizontal"-->
+<!--        android:paddingTop="20dp">-->
+
+<!--        <Button-->
+<!--            android:id="@+id/logoutButton"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:text="Logout"-->
+<!--            app:backgroundTint="#2196F3" />-->
+<!--    </LinearLayout>-->
+
+    <FrameLayout
+        android:id="@+id/activity_settings"
+        android:tag="@+id/activity_settings"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" >
+    </FrameLayout>
+
+</FrameLayout>

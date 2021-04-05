@@ -1,5 +1,6 @@
 package com.example.familymap;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -42,31 +43,24 @@ public class MainActivity extends AppCompatActivity {
 
         if (loginFragment == null) {
             loginFragment = new LoginFragment();
-//            getSupportFragmentManager().beginTransaction().replace(R.id.main_placeholder, loginFragment).commit();
         }
     }
 
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
-        // Defines the xml file for the fragment
         System.out.println("Hit onCreateView");
         return inflater.inflate(R.layout.fragment_login, parent, false);
      }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.map_settings) {
             return false;
         }
@@ -86,6 +80,11 @@ public class MainActivity extends AppCompatActivity {
 //        getSupportFragmentManager().beginTransaction().add(R.id.fragment_map, new MapFragment(), "MAPFRAGMENT")
 //                .commit();
         getSupportFragmentManager().beginTransaction().replace(R.id.main_placeholder, mapsFragment).commit();
+    }
+
+    public void showSettings() {
+        Intent intent = new Intent(this, SettingsActivity.class);
+        startActivity(intent);
     }
 
     public void setLoginResult(LoginResult lr) {
