@@ -30,6 +30,8 @@ import com.joanzapata.iconify.fonts.FontAwesomeIcons;
 
 import Models.Event;
 import Models.Person;
+import Utils.Globals;
+import Utils.Settings;
 
 public class MapsFragment extends Fragment implements GoogleMap.OnMarkerClickListener, OnMapReadyCallback {
     private GoogleMap googleMap = null;
@@ -63,10 +65,8 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMarkerClickLis
                         ": " + event.getCity() + ", " + event.getCountry() + " (" + event.getYear() + ")");
             }
         }
-
         return false;
     }
-
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -143,14 +143,19 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMarkerClickLis
     }
 
     private void placePins(GoogleMap googleMap) {
-        if (((MainActivity) getActivity()).eventListResult == null) {
-            Toast.makeText(getContext(), "No events yet", Toast.LENGTH_SHORT).show();
+        if (Globals.getInstance().getEventListResult() == null) {
+            Toast.makeText(getContext(), "No events to display on map", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        for (Event event : ((MainActivity) getActivity()).eventListResult.getData()) {
-            LatLng pin = new LatLng(event.getLatitude(), event.getLongitude());
+        Person person = null;
 
+        for (Event event : Globals.getInstance().getEventListResult().getData()) {
+            person = getPerson(event.getPersonID());
+            if (Settings.getInstance().maleEvents == false && person.getGender().equals("m")) continue;
+            if (Settings.getInstance().femaleEvents == false && person.getGender().equals("f")) continue;
+
+            LatLng pin = new LatLng(event.getLatitude(), event.getLongitude());
             Marker marker = googleMap.addMarker(new MarkerOptions().position(pin).icon(BitmapDescriptorFactory.defaultMarker(getEventPin(event))));
             marker.setTag(event.getEventID());
         }
@@ -158,7 +163,7 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMarkerClickLis
 
 
     private Event getEvent(String eventID) {
-        for (Event event : ((MainActivity) getActivity()).eventListResult.getData()) {
+        for (Event event : Globals.getInstance().getEventListResult().getData()) {
             if (event.getEventID().equals(eventID)) {
                 return event;
             }
@@ -167,15 +172,12 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMarkerClickLis
     }
 
     private Person getPerson(String personID) {
-        for (Person person : ((MainActivity) getActivity()).personListResult.getData()) {
+        for (Person person : Globals.getInstance().getPersonListResult().getData()) {
             if (person.getPersonID().equals(personID)) {
                 return person;
             }
         }
         return null;
     }
-
-
-
 
 }

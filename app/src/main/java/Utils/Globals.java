@@ -2,12 +2,26 @@ package Utils;
 
 import android.app.Application;
 
+import Result.EventListResult;
 import Result.LoginResult;
+import Result.PersonListResult;
 
-public class Globals extends Application {
-    public String serverHost = null;
-    public String serverPort = null;
-    public LoginResult loginResult = null;
+public class Globals {
+    private static Globals instance = null;
+
+    public boolean firstLoad = true;
+    private String serverHost = null;
+    private String serverPort = null;
+    private LoginResult loginResult = null;
+    private EventListResult eventListResult = null;
+    private PersonListResult personListResult = null;
+
+    public static Globals getInstance() {
+        if (instance == null) {
+            instance = new Globals();
+        }
+        return instance;
+    }
 
     public String getServerHost() {
         return serverHost;
@@ -33,5 +47,20 @@ public class Globals extends Application {
         this.loginResult = loginResult;
     }
 
+    public EventListResult getEventListResult() {
+        return eventListResult;
+    }
+
+    public void setEventListResult(EventListResult eventListResult) {
+        this.eventListResult = eventListResult;
+    }
+
+    public PersonListResult getPersonListResult() {
+        return personListResult;
+    }
+
+    public void setPersonListResult(PersonListResult personListResult) {
+        this.personListResult = personListResult;
+    }
 
 }

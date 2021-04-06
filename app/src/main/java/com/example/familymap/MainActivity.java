@@ -8,6 +8,8 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
+import android.os.Parcelable;
+import android.util.EventLog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,18 +20,15 @@ import android.view.ViewGroup;
 import com.joanzapata.iconify.Iconify;
 import com.joanzapata.iconify.fonts.FontAwesomeModule;
 
+import java.io.Serializable;
+
 import Result.EventListResult;
 import Result.LoginResult;
 import Result.PersonListResult;
+import Utils.Globals;
 
 public class MainActivity extends AppCompatActivity {
     private LoginFragment loginFragment = null;
-    private MapsFragment mapsFragment = null;
-    public LoginResult loginResult = null;
-    public EventListResult eventListResult = null;
-    public PersonListResult personListResult = null;
-    public String serverHost = null;
-    public String serverPort = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,12 +43,11 @@ public class MainActivity extends AppCompatActivity {
         if (loginFragment == null) {
             loginFragment = new LoginFragment();
         }
-    }
 
-    public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
-        System.out.println("Hit onCreateView");
-        return inflater.inflate(R.layout.fragment_login, parent, false);
-     }
+        if (!Globals.getInstance().firstLoad) {
+            showMap();
+        }
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -71,23 +69,12 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public void showMap(MapsFragment mapsFragment) {
-//        FragmentManager fragmentManager = getSupportFragmentManager();
-//        Fragment fragment = fragmentManager.findFragmentById(R.id.fragment_login);
-//
-//        fragmentManager.beginTransaction().remove(fragment).commit();
-//
-//        getSupportFragmentManager().beginTransaction().add(R.id.fragment_map, new MapFragment(), "MAPFRAGMENT")
-//                .commit();
-        getSupportFragmentManager().beginTransaction().replace(R.id.main_placeholder, mapsFragment).commit();
+    public void showMap() {
+        getSupportFragmentManager().beginTransaction().replace(R.id.main_placeholder, new MapsFragment()).commit();
     }
 
     public void showSettings() {
         Intent intent = new Intent(this, SettingsActivity.class);
         startActivity(intent);
-    }
-
-    public void setLoginResult(LoginResult lr) {
-        loginResult = lr;
     }
 }

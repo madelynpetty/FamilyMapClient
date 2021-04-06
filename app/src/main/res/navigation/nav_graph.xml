@@ -7,9 +7,6 @@
     app:startDestination="@id/LoginFragment">
 
     <fragment
-        android:id="@+id/MainActivity"
-        android:name="com.example.familymap.MainActivity" />
-    <fragment
         android:id="@+id/LoginFragment"
         android:name="com.example.familymap.LoginFragment"
         android:label="@string/loginFragmentLabel"
@@ -19,13 +16,4 @@
         android:name="com.example.familymap.MapsFragment"
         android:label="string/mapsFragmentLabel"
         tools:layout="@layout/fragment_maps" />
-    <fragment
-        android:id="@+id/settingsFragment"
-        android:name="com.example.familymap.SettingsActivity"
-        android:label="SettingsFragment" />
-    <fragment
-        android:id="@+id/settingsFragment2"
-        android:name="com.example.familymap.SettingsActivity"
-        android:label="fragment_settings2"
-        tools:layout="@layout/activity_settings" />
 </navigation>

@@ -41,7 +41,6 @@ public class LoginFragment extends Fragment {
     private EditText serverHost, serverPort, username, password, firstName, lastName, email;
     private RadioButton genderMale, genderFemale;
     private Button registerButton, loginButton;
-    private MapsFragment mapsFragment = null;
 
     @Override
     public View onCreateView(
@@ -49,7 +48,6 @@ public class LoginFragment extends Fragment {
             Bundle savedInstanceState
     ) {
          getActivity().setTitle("Family Map Login");
-        // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_login, container, false);
     }
 
@@ -96,14 +94,15 @@ public class LoginFragment extends Fragment {
         //TODO DELETE THESE OUT LATER
         serverHost.setText("10.0.2.2");
         serverPort.setText("8080");
+        username.setText("user");
+        password.setText("pass");
 
-        ((MainActivity) getActivity()).serverHost = serverHost.getText().toString();
-        ((MainActivity) getActivity()).serverPort = serverPort.getText().toString();
+        Globals.getInstance().setServerHost(serverHost.getText().toString());
+        Globals.getInstance().setServerPort(serverPort.getText().toString());
 
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-//                Toast.makeText(getContext(), "Attempting to login", Toast.LENGTH_SHORT).show();
                 try {
                     LoginRequest loginRequest = new LoginRequest(username.getText().toString(), password.getText().toString());
                     LoginTask loginTask = new LoginTask();
@@ -117,7 +116,6 @@ public class LoginFragment extends Fragment {
         registerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-//                Toast.makeText(getContext(), "Attempting to register", Toast.LENGTH_SHORT).show();
                 try {
                     RegisterRequest registerRequest = new RegisterRequest(username.getText().toString(), password.getText().toString(), email.getText().toString(),
                             firstName.getText().toString(), lastName.getText().toString(), genderFemale.isChecked() ? "f" : "m");
@@ -180,9 +178,7 @@ public class LoginFragment extends Fragment {
                 Toast.makeText(getContext(), "Login was unsuccessful", Toast.LENGTH_SHORT).show();
             }
             else if (lr.success) {
-//                Toast.makeText(getContext(), "Login was successful", Toast.LENGTH_SHORT).show();
-
-                ((MainActivity) getActivity()).setLoginResult(lr);
+                Globals.getInstance().setLoginResult(lr);
 
                 FamilyDataTask familyDataTask = new FamilyDataTask();
                 familyDataTask.execute(lr.authtoken);
@@ -246,7 +242,7 @@ public class LoginFragment extends Fragment {
             else if (lr.success) {
                 Toast.makeText(getContext(), "Registration was successful", Toast.LENGTH_SHORT).show();
 
-                ((MainActivity) getActivity()).setLoginResult(lr);
+                Globals.getInstance().setLoginResult(lr);
 
                 FamilyDataTask familyDataTask = new FamilyDataTask();
                 familyDataTask.execute(lr.authtoken);
@@ -310,10 +306,10 @@ public class LoginFragment extends Fragment {
                 else {
                     Toast.makeText(getContext(), ((Person) personListResult.getData().get(0)).getFirstName()
                             + " " + ((Person) personListResult.getData().get(0)).getLastName() + " is logged in.", Toast.LENGTH_SHORT).show();
-                    ((MainActivity) getActivity()).personListResult = personListResult;
+                    Globals.getInstance().setPersonListResult(personListResult);
 
                     EventsTask eventsTask = new EventsTask();
-                    eventsTask.execute(((MainActivity) getActivity()).loginResult);
+                    eventsTask.execute(Globals.getInstance().getLoginResult());
                 }
             }
             else {
@@ -327,12 +323,13 @@ public class LoginFragment extends Fragment {
         protected EventListResult doInBackground(LoginResult... loginResults) {
             EventListResult eventListResult = null;
             try {
-                URL url = new URL("http://" + ((MainActivity) getActivity()).serverHost + ":" + ((MainActivity) getActivity()).serverPort + "/event");
+                URL url = new URL("http://" + Globals.getInstance().getServerHost() + ":" + Globals.getInstance().getServerPort() + "/event");
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                 connection.setRequestMethod("GET");
                 connection.setDoOutput(false);
 
-                connection.setRequestProperty("Authorization", ((MainActivity) getActivity()).loginResult.authtoken);
+                connection.setRequestProperty("Authorization", (Globals.getInstance().getLoginResult().authtoken));
+
 
                 connection.connect();
 
@@ -370,14 +367,9 @@ public class LoginFragment extends Fragment {
                 Toast.makeText(getContext(), "No events retrieved for logged in user", Toast.LENGTH_SHORT).show();
             }
             else if (elr.isSuccess()) {
-//                Toast.makeText(getContext(), "Success: Events retrieved for logged in user", Toast.LENGTH_SHORT).show();
-                ((MainActivity) getActivity()).eventListResult = elr;
+                Globals.getInstance().setEventListResult(elr);
 
-                if (mapsFragment == null) {
-                    mapsFragment = new MapsFragment();
-                }
-
-                ((MainActivity) getActivity()).showMap(mapsFragment);
+                ((MainActivity) getActivity()).showMap();
             }
             else {
                 Toast.makeText(getContext(), "Event retrieval was unsuccessful", Toast.LENGTH_SHORT).show();

@@ -1,32 +1,30 @@
 package com.example.familymap;
 
+import android.content.Intent;
 import android.os.Bundle;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.NavUtils;
 
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CompoundButton;
-import android.widget.RadioGroup;
 import android.widget.Switch;
+
+import com.joanzapata.iconify.IconDrawable;
+import com.joanzapata.iconify.fonts.FontAwesomeIcons;
+
+import java.util.Set;
+
+import Result.EventListResult;
+import Utils.Globals;
+import Utils.Settings;
 
 
 public class SettingsActivity extends AppCompatActivity {
-    public static boolean lifeStoryLines = true;
-    public static boolean familyTreeLines = true;
-    public static boolean spouseLines = true;
-    public static boolean fathersSide = true;
-    public static boolean mothersSide = true;
-    public static boolean maleEvents = true;
-    public static boolean femaleEvents = true;
-
     private Switch lifeStoryLinesSwitch;
     private Switch familyTreeLinesSwitch;
     private Switch spouseLinesSwitch;
@@ -44,42 +42,58 @@ public class SettingsActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        Globals.getInstance().firstLoad = false;
+
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
         lifeStoryLinesSwitch = this.findViewById(R.id.lifeStoryLinesSwitch);
+        lifeStoryLinesSwitch.setChecked(Settings.getInstance().lifeStoryLines);
+
         familyTreeLinesSwitch = this.findViewById(R.id.familyTreeLinesSwitch);
+        familyTreeLinesSwitch.setChecked(Settings.getInstance().familyTreeLines);
+
         spouseLinesSwitch = this.findViewById(R.id.spouseLinesSwitch);
+        spouseLinesSwitch.setChecked(Settings.getInstance().spouseLines);
+
         fathersSideSwitch = this.findViewById(R.id.fathersSideSwitch);
+        fathersSideSwitch.setChecked(Settings.getInstance().fathersSide);
+
         mothersSideSwitch = this.findViewById(R.id.mothersSideSwitch);
+        mothersSideSwitch.setChecked(Settings.getInstance().mothersSide);
+
         maleEventsSwitch = this.findViewById(R.id.maleEventsSwitch);
+        maleEventsSwitch.setChecked(Settings.getInstance().maleEvents);
+
         femaleEventsSwitch = this.findViewById(R.id.femaleEventsSwitch);
+        femaleEventsSwitch.setChecked(Settings.getInstance().femaleEvents);
+
         logoutButton = this.findViewById(R.id.logoutButton);
 
         CompoundButton.OnCheckedChangeListener listener = new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (buttonView == lifeStoryLinesSwitch) {
-                    lifeStoryLines = isChecked;
+                    Settings.getInstance().lifeStoryLines = isChecked;
                 }
                 else if (buttonView == familyTreeLinesSwitch) {
-                    familyTreeLines = isChecked;
+                    Settings.getInstance().familyTreeLines = isChecked;
                 }
                 else if (buttonView == spouseLinesSwitch) {
-                    spouseLines = isChecked;
+                    Settings.getInstance().spouseLines = isChecked;
                 }
                 else if (buttonView == fathersSideSwitch) {
-                    fathersSide = isChecked;
+                    Settings.getInstance().fathersSide = isChecked;
                 }
                 else if (buttonView == mothersSideSwitch) {
-                    mothersSide = isChecked;
+                    Settings.getInstance().mothersSide = isChecked;
                 }
                 else if (buttonView == maleEventsSwitch) {
-                    maleEvents = isChecked;
+                    Settings.getInstance().maleEvents = isChecked;
                 }
                 else if (buttonView == femaleEventsSwitch) {
-                    femaleEvents = isChecked;
+                    Settings.getInstance().femaleEvents = isChecked;
                 }
             }
         };
@@ -117,7 +131,6 @@ public class SettingsActivity extends AppCompatActivity {
         if (id == android.R.id.home) {
             NavUtils.navigateUpFromSameTask(this);
             return true;
-//            finish();
         }
 
         return super.onOptionsItemSelected(item);
