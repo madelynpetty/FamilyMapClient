@@ -5,6 +5,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -25,10 +26,16 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.joanzapata.iconify.IconDrawable;
 import com.joanzapata.iconify.fonts.FontAwesomeIcons;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+
+import com.google.android.gms.maps.model.Polyline;
 
 import Models.Event;
 import Models.Person;
@@ -38,6 +45,7 @@ import Utils.Settings;
 
 public class MapsFragment extends Fragment implements GoogleMap.OnMarkerClickListener, OnMapReadyCallback {
     private GoogleMap googleMap = null;
+    private ArrayList<Polyline> lines = new ArrayList<>();
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -50,6 +58,7 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMarkerClickLis
 
     @Override
     public boolean onMarkerClick(Marker marker) {
+        clearLines();
         Event event = getEvent((String) marker.getTag());
 
         if (event != null) {
@@ -67,9 +76,12 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMarkerClickLis
                 ((TextView) getView().findViewById(R.id.EventText)).setText(event.getEventType() +
                         ": " + event.getCity() + ", " + event.getCountry() + " (" + event.getYear() + ")");
             }
+
+            drawLines(event);
         }
         return false;
     }
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -179,6 +191,25 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMarkerClickLis
         return null;
     }
 
+    private ArrayList<Event> getEventsForPerson(Person person) {
+        ArrayList<Event> events = new ArrayList<>();
+        for (Event event : Globals.getInstance().getEventListResult().getData()) {
+            if (event.getPersonID().equals(person.getPersonID())) {
+                events.add(event);
+            }
+        }
+        return events;
+    }
+
+    private Event getBirthEventForPerson(String personID) {
+        for (Event event : Globals.getInstance().getEventListResult().getData()) {
+            if (event.getEventType().equals("birth") && event.getPersonID().equals(personID)) {
+                return event;
+            }
+        }
+        return null;
+    }
+
     private Person getPerson(String personID) {
         for (Person person : Globals.getInstance().getPersonListResult().getData()) {
             if (person.getPersonID().equals(personID)) {
@@ -218,6 +249,75 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMarkerClickLis
             momsSide.addAll(getMomsSide(mom));
         }
         return momsSide;
+    }
+
+    private void drawFamilyLines(Event event) {
+        Person person = getPerson(event.getPersonID());
+
+        if (person.getMotherID() != null) {
+            Event momBirth = getBirthEventForPerson(person.getMotherID());
+            PolylineOptions line = new PolylineOptions().add(
+                    new LatLng(event.getLatitude(), event.getLongitude()),
+                    new LatLng(momBirth.getLatitude(), momBirth.getLongitude())).width(5).color(Color.BLUE);
+            lines.add(googleMap.addPolyline(line));
+            drawFamilyLines(momBirth);
+        }
+
+        if (person.getFatherID() != null) {
+            Event dadBirth = getBirthEventForPerson(person.getFatherID());
+            PolylineOptions line = new PolylineOptions().add(
+                    new LatLng(event.getLatitude(), event.getLongitude()),
+                    new LatLng(dadBirth.getLatitude(), dadBirth.getLongitude())).width(5).color(Color.BLUE);
+            lines.add(googleMap.addPolyline(line));
+            drawFamilyLines(dadBirth);
+        }
+    }
+
+    private void drawLifeStoryLines(Person person) {
+        ArrayList<Event> events = getEventsForPerson(person);
+        Collections.sort(events, new Comparator<Event>() {
+            @Override
+            public int compare(Event o1, Event o2) {
+                return ("" + o1.getYear()).compareTo(("" + o2.getYear()));
+            }
+        });
+
+        for (int i = 0; i < events.size(); i++) {
+            if (i < events.size() - 1) {
+                PolylineOptions line = new PolylineOptions().add(
+                        new LatLng(events.get(i).getLatitude(), events.get(i).getLongitude()),
+                        new LatLng(events.get(i + 1).getLatitude(), events.get(i + 1).getLongitude())).width(5).color(Color.GREEN);
+                lines.add(googleMap.addPolyline(line));
+            }
+        }
+    }
+
+    private void drawLines(Event event) {
+        Person person = getPerson(event.getPersonID());
+        if (Settings.getInstance().spouseLines == true) {
+            if (person.getSpouseID() != null) {
+                Event spouseBirth = getBirthEventForPerson(person.getSpouseID());
+                PolylineOptions line = new PolylineOptions().add(
+                        new LatLng(event.getLatitude(), event.getLongitude()),
+                        new LatLng(spouseBirth.getLatitude(), spouseBirth.getLongitude())).width(5).color(Color.RED);
+                lines.add(googleMap.addPolyline(line));
+            }
+        }
+
+        if (Settings.getInstance().familyTreeLines == true) {
+            drawFamilyLines(event);
+        }
+
+        if (Settings.getInstance().lifeStoryLines == true) {
+            drawLifeStoryLines(getPerson(event.getPersonID()));
+        }
+    }
+
+    private void clearLines() {
+        for (Polyline l : lines) {
+            l.remove();
+        }
+        lines.clear();
     }
 
 }
