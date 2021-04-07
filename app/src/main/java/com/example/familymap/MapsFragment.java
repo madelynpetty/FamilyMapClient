@@ -28,8 +28,11 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.joanzapata.iconify.IconDrawable;
 import com.joanzapata.iconify.fonts.FontAwesomeIcons;
 
+import java.util.ArrayList;
+
 import Models.Event;
 import Models.Person;
+import Result.PersonListResult;
 import Utils.Globals;
 import Utils.Settings;
 
@@ -150,17 +153,22 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMarkerClickLis
 
         Person person = null;
 
+        ArrayList<Person> momsSide = getMomsSide(getPerson(Globals.getInstance().getLoginResult().personID));
+        ArrayList<Person> dadsSide = getDadsSide(getPerson(Globals.getInstance().getLoginResult().personID));
+
         for (Event event : Globals.getInstance().getEventListResult().getData()) {
             person = getPerson(event.getPersonID());
             if (Settings.getInstance().maleEvents == false && person.getGender().equals("m")) continue;
             if (Settings.getInstance().femaleEvents == false && person.getGender().equals("f")) continue;
+            if (Settings.getInstance().mothersSide == false && momsSide.contains(person)) continue;
+            if (Settings.getInstance().fathersSide == false && dadsSide.contains(person)) continue;
+
 
             LatLng pin = new LatLng(event.getLatitude(), event.getLongitude());
             Marker marker = googleMap.addMarker(new MarkerOptions().position(pin).icon(BitmapDescriptorFactory.defaultMarker(getEventPin(event))));
             marker.setTag(event.getEventID());
         }
     }
-
 
     private Event getEvent(String eventID) {
         for (Event event : Globals.getInstance().getEventListResult().getData()) {
@@ -178,6 +186,38 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMarkerClickLis
             }
         }
         return null;
+    }
+
+    private ArrayList<Person> getMomsSide(Person person) {
+        ArrayList<Person> momsSide = new ArrayList<>();
+
+        if (person.getMotherID() != null) {
+            Person mom = getPerson(person.getMotherID());
+            Person dad = getPerson(person.getFatherID());
+            momsSide.add(mom);
+            if (!person.getPersonID().equals(Globals.getInstance().getLoginResult().personID)) {
+                momsSide.add(dad);
+                momsSide.addAll(getMomsSide(dad));
+            }
+            momsSide.addAll(getMomsSide(mom));
+        }
+        return momsSide;
+    }
+
+    private ArrayList<Person> getDadsSide(Person person) {
+        ArrayList<Person> momsSide = new ArrayList<>();
+
+        if (person.getMotherID() != null) {
+            Person mom = getPerson(person.getMotherID());
+            Person dad = getPerson(person.getFatherID());
+            momsSide.add(mom);
+            if (!person.getPersonID().equals(Globals.getInstance().getLoginResult().personID)) {
+                momsSide.add(dad);
+                momsSide.addAll(getMomsSide(dad));
+            }
+            momsSide.addAll(getMomsSide(mom));
+        }
+        return momsSide;
     }
 
 }

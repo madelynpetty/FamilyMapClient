@@ -44,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
             loginFragment = new LoginFragment();
         }
 
-        if (!Globals.getInstance().firstLoad) {
+        if (Globals.getInstance().getLoginResult() != null) {
             showMap();
         }
     }

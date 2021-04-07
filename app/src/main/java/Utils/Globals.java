@@ -9,7 +9,6 @@ import Result.PersonListResult;
 public class Globals {
     private static Globals instance = null;
 
-    public boolean firstLoad = true;
     private String serverHost = null;
     private String serverPort = null;
     private LoginResult loginResult = null;
