@@ -14,15 +14,8 @@ import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 
-import com.joanzapata.iconify.IconDrawable;
-import com.joanzapata.iconify.fonts.FontAwesomeIcons;
-
-import java.util.Set;
-
-import Result.EventListResult;
 import Utils.Globals;
 import Utils.Settings;
-
 
 public class SettingsActivity extends AppCompatActivity {
     private Switch lifeStoryLinesSwitch;
@@ -104,11 +97,13 @@ public class SettingsActivity extends AppCompatActivity {
         maleEventsSwitch.setOnCheckedChangeListener(listener);
         femaleEventsSwitch.setOnCheckedChangeListener(listener);
 
+        Intent intent = new Intent(this, MainActivity.class);
         logoutButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 try {
-                    //TODO logout user and take to loginfragment again
+                    Globals.getInstance().setLoginResult(null);
+                    startActivity(intent);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

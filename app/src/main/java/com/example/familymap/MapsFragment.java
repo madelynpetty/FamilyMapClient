@@ -4,7 +4,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -34,12 +33,10 @@ import com.joanzapata.iconify.fonts.FontAwesomeIcons;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-
-import com.google.android.gms.maps.model.Polyline;
+import java.util.Random;
 
 import Models.Event;
 import Models.Person;
-import Result.PersonListResult;
 import Utils.Globals;
 import Utils.Settings;
 
@@ -50,8 +47,9 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMarkerClickLis
     @Override
     public void onMapReady(GoogleMap googleMap) {
         this.googleMap = googleMap;
-        LatLng saltLakeCity = new LatLng(-40, 112);
-        googleMap.moveCamera(CameraUpdateFactory.newLatLng(saltLakeCity));
+        String loggedInID = Globals.getInstance().getLoginResult().personID;
+        Event loggedInBirth = getBirthEventForPerson(loggedInID);
+        googleMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(loggedInBirth.getLatitude(), loggedInBirth.getLongitude())));
         googleMap.setOnMarkerClickListener(this);
         placePins(googleMap);
     }
@@ -138,7 +136,10 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMarkerClickLis
         float baptismColor = BitmapDescriptorFactory.HUE_BLUE;
         float deathColor = BitmapDescriptorFactory.HUE_ORANGE;
         float marriageColor = BitmapDescriptorFactory.HUE_MAGENTA;
-        float errorColor = BitmapDescriptorFactory.HUE_RED;
+
+        float[] color = new float[]{ BitmapDescriptorFactory.HUE_VIOLET, BitmapDescriptorFactory.HUE_YELLOW,
+                                BitmapDescriptorFactory.HUE_RED, BitmapDescriptorFactory.HUE_AZURE,
+                                BitmapDescriptorFactory.HUE_CYAN, BitmapDescriptorFactory.HUE_ROSE};
 
         if (event.getEventType().equals("birth")) {
             return birthColor;
@@ -153,7 +154,9 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMarkerClickLis
             return marriageColor;
         }
         else {
-            return errorColor;
+            Random random = new Random();
+            int randomColor = random.nextInt(color.length - 1);
+            return color[randomColor];
         }
     }
 
@@ -255,21 +258,26 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMarkerClickLis
         Person person = getPerson(event.getPersonID());
 
         if (person.getMotherID() != null) {
-            Event momBirth = getBirthEventForPerson(person.getMotherID());
-            PolylineOptions line = new PolylineOptions().add(
-                    new LatLng(event.getLatitude(), event.getLongitude()),
-                    new LatLng(momBirth.getLatitude(), momBirth.getLongitude())).width(5).color(Color.BLUE);
-            lines.add(googleMap.addPolyline(line));
-            drawFamilyLines(momBirth);
+            Event momEarliestEvent = getEarliestEvent(getPerson(person.getMotherID()));
+            if (momEarliestEvent != null) {
+                PolylineOptions line = new PolylineOptions().add(
+                        new LatLng(event.getLatitude(), event.getLongitude()),
+                        new LatLng(momEarliestEvent.getLatitude(), momEarliestEvent.getLongitude())).
+                        width(5).color(Color.BLUE);
+                lines.add(googleMap.addPolyline(line));
+                drawFamilyLines(momEarliestEvent);
+            }
         }
 
         if (person.getFatherID() != null) {
-            Event dadBirth = getBirthEventForPerson(person.getFatherID());
-            PolylineOptions line = new PolylineOptions().add(
-                    new LatLng(event.getLatitude(), event.getLongitude()),
-                    new LatLng(dadBirth.getLatitude(), dadBirth.getLongitude())).width(5).color(Color.BLUE);
-            lines.add(googleMap.addPolyline(line));
-            drawFamilyLines(dadBirth);
+            Event dadEarliestEvent = getEarliestEvent(getPerson(person.getFatherID()));
+            if (dadEarliestEvent != null) {
+                PolylineOptions line = new PolylineOptions().add(
+                        new LatLng(event.getLatitude(), event.getLongitude()),
+                        new LatLng(dadEarliestEvent.getLatitude(), dadEarliestEvent.getLongitude())).width(5).color(Color.BLUE);
+                lines.add(googleMap.addPolyline(line));
+                drawFamilyLines(dadEarliestEvent);
+            }
         }
     }
 
@@ -286,21 +294,37 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMarkerClickLis
             if (i < events.size() - 1) {
                 PolylineOptions line = new PolylineOptions().add(
                         new LatLng(events.get(i).getLatitude(), events.get(i).getLongitude()),
-                        new LatLng(events.get(i + 1).getLatitude(), events.get(i + 1).getLongitude())).width(5).color(Color.GREEN);
+                        new LatLng(events.get(i + 1).getLatitude(), events.get(i + 1).getLongitude())).width(5).color(Color.CYAN);
                 lines.add(googleMap.addPolyline(line));
             }
         }
+    }
+
+    private Event getEarliestEvent(Person person) {
+        ArrayList<Event> events = getEventsForPerson(person);
+        Collections.sort(events, new Comparator<Event>() {
+            @Override
+            public int compare(Event o1, Event o2) {
+                return ("" + o1.getYear()).compareTo(("" + o2.getYear()));
+            }
+        });
+        if (events.size() < 0) {
+            return null;
+        }
+        return events.get(0);
     }
 
     private void drawLines(Event event) {
         Person person = getPerson(event.getPersonID());
         if (Settings.getInstance().spouseLines == true) {
             if (person.getSpouseID() != null) {
-                Event spouseBirth = getBirthEventForPerson(person.getSpouseID());
-                PolylineOptions line = new PolylineOptions().add(
-                        new LatLng(event.getLatitude(), event.getLongitude()),
-                        new LatLng(spouseBirth.getLatitude(), spouseBirth.getLongitude())).width(5).color(Color.RED);
-                lines.add(googleMap.addPolyline(line));
+                Event spouseEvent = getEarliestEvent(getPerson(person.getSpouseID()));
+                if (spouseEvent != null) {
+                    PolylineOptions line = new PolylineOptions().add(
+                            new LatLng(event.getLatitude(), event.getLongitude()),
+                            new LatLng(spouseEvent.getLatitude(), spouseEvent.getLongitude())).width(5).color(Color.RED);
+                    lines.add(googleMap.addPolyline(line));
+                }
             }
         }
 

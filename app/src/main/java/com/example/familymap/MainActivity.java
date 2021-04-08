@@ -5,26 +5,12 @@ import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-
-import android.os.Parcelable;
-import android.util.EventLog;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
 
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.ViewGroup;
 import com.joanzapata.iconify.Iconify;
 import com.joanzapata.iconify.fonts.FontAwesomeModule;
 
-import java.io.Serializable;
-
-import Result.EventListResult;
-import Result.LoginResult;
-import Result.PersonListResult;
 import Utils.Globals;
 
 public class MainActivity extends AppCompatActivity {

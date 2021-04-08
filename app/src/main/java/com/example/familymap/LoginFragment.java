@@ -25,14 +25,12 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import Models.Event;
 import Models.Person;
 import Request.LoginRequest;
 import Request.RegisterRequest;
 import Result.EventListResult;
 import Result.LoginResult;
 import Result.PersonListResult;
-import Result.RegisterResult;
 import Utils.Globals;
 import Utils.StringUtil;
 
@@ -94,8 +92,8 @@ public class LoginFragment extends Fragment {
         //TODO DELETE THESE OUT LATER
         serverHost.setText("10.0.2.2");
         serverPort.setText("8080");
-        username.setText("user");
-        password.setText("pass");
+//        username.setText("user");
+//        password.setText("pass");
 
         Globals.getInstance().setServerHost(serverHost.getText().toString());
         Globals.getInstance().setServerPort(serverPort.getText().toString());
