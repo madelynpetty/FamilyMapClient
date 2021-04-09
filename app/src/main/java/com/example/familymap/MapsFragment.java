@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -13,6 +14,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -43,6 +45,7 @@ import Utils.Settings;
 public class MapsFragment extends Fragment implements GoogleMap.OnMarkerClickListener, OnMapReadyCallback {
     private GoogleMap googleMap = null;
     private ArrayList<Polyline> lines = new ArrayList<>();
+    private String clickedPinPersonID;
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -73,6 +76,7 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMarkerClickLis
                 ((TextView) getView().findViewById(R.id.NameText)).setText(person.getFirstName() + " " + person.getLastName());
                 ((TextView) getView().findViewById(R.id.EventText)).setText(event.getEventType() +
                         ": " + event.getCity() + ", " + event.getCountry() + " (" + event.getYear() + ")");
+                clickedPinPersonID = person.getPersonID();
             }
 
             drawLines(event);
@@ -129,6 +133,16 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMarkerClickLis
         if (mapFragment != null) {
             mapFragment.getMapAsync(this);
         }
+
+        LinearLayout eventBox = (LinearLayout) getView().findViewById(R.id.eventHolder);
+        eventBox.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getActivity(), PersonActivity.class);
+                intent.putExtra("personID", clickedPinPersonID);
+                startActivity(intent);
+            }
+        });
     }
 
     private float getEventPin(Event event) {
