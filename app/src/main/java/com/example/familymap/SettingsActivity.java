@@ -103,7 +103,9 @@ public class SettingsActivity extends AppCompatActivity {
             public void onClick(View view) {
                 try {
                     Globals.getInstance().setLoginResult(null);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);
+                    //TODO set flags to clear task or new task
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

@@ -254,7 +254,7 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMarkerClickLis
         return momsSide;
     }
 
-    private void drawFamilyLines(Event event) {
+    private void drawFamilyLines(Event event, int width) {
         Person person = getPerson(event.getPersonID());
 
         if (person.getMotherID() != null) {
@@ -263,9 +263,9 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMarkerClickLis
                 PolylineOptions line = new PolylineOptions().add(
                         new LatLng(event.getLatitude(), event.getLongitude()),
                         new LatLng(momEarliestEvent.getLatitude(), momEarliestEvent.getLongitude())).
-                        width(5).color(Color.BLUE);
+                        width(width).color(Color.BLUE);
                 lines.add(googleMap.addPolyline(line));
-                drawFamilyLines(momEarliestEvent);
+                drawFamilyLines(momEarliestEvent, width - 4);
             }
         }
 
@@ -274,9 +274,10 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMarkerClickLis
             if (dadEarliestEvent != null) {
                 PolylineOptions line = new PolylineOptions().add(
                         new LatLng(event.getLatitude(), event.getLongitude()),
-                        new LatLng(dadEarliestEvent.getLatitude(), dadEarliestEvent.getLongitude())).width(5).color(Color.BLUE);
+                        new LatLng(dadEarliestEvent.getLatitude(), dadEarliestEvent.getLongitude())).
+                        width(width).color(Color.BLUE);
                 lines.add(googleMap.addPolyline(line));
-                drawFamilyLines(dadEarliestEvent);
+                drawFamilyLines(dadEarliestEvent, width - 4);
             }
         }
     }
@@ -329,7 +330,7 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMarkerClickLis
         }
 
         if (Settings.getInstance().familyTreeLines == true) {
-            drawFamilyLines(event);
+            drawFamilyLines(event, 20);
         }
 
         if (Settings.getInstance().lifeStoryLines == true) {
