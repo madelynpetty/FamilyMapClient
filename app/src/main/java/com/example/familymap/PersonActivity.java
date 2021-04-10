@@ -1,5 +1,6 @@
 package com.example.familymap;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -44,6 +45,9 @@ public class PersonActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
+        Intent eventIntent = new Intent(this, EventActivity.class);
+        Intent familyIntent = new Intent(this, PersonActivity.class);
+
         if (getIntent().getStringExtra("personID") != null) {
             Person person = getPerson(getIntent().getStringExtra("personID"));
 
@@ -56,23 +60,22 @@ public class PersonActivity extends AppCompatActivity {
                 ((TextView) findViewById(R.id.personGender)).setText("Female");
             }
 
-            //FIRST EXPANDABLE LIST VIEW FOR LIFE EVENTS
-            ExpandableListAdapter expandableListAdapter;
-
             ExpandableListView expandableListView = (ExpandableListView) findViewById(R.id.expandableList);
+            ImageView image = findViewById(R.id.personActivityImageField);
 
             HashMap<String, List<String>> ExpandableListDetail = new HashMap<>();
             ExpandableListDetail.put("LIFE EVENTS", getEventsForPersonInOrder(person));
             ExpandableListDetail.put("FAMILY", getFamily(person));
 
             ArrayList<String> expandableListTitle = new ArrayList<String>(ExpandableListDetail.keySet());
-            expandableListAdapter = new CustomExpandableListAdapter(this, expandableListTitle, ExpandableListDetail);
+            ExpandableListAdapter expandableListAdapter = new CustomExpandableListAdapter(this, expandableListTitle, ExpandableListDetail);
+
             expandableListView.setAdapter(expandableListAdapter);
             expandableListView.setOnGroupExpandListener(new ExpandableListView.OnGroupExpandListener() {
 
                 @Override
                 public void onGroupExpand(int groupPosition) {
-                    //DO NOTHING
+
                 }
             });
 
@@ -88,14 +91,54 @@ public class PersonActivity extends AppCompatActivity {
                 @Override
                 public boolean onChildClick(ExpandableListView parent, View v,
                                             int groupPosition, int childPosition, long id) {
-                    Toast.makeText(
-                            getApplicationContext(),
-                            expandableListTitle.get(groupPosition)
-                                    + " -> "
-                                    + ExpandableListDetail.get(
-                                    expandableListTitle.get(groupPosition)).get(
-                                    childPosition), Toast.LENGTH_SHORT
-                    ).show();
+                    if (groupPosition == 0) {
+                        List<String> personsEvents = getEventsForPersonInOrder(person);
+                        List<String> personsEventTypes = new ArrayList<>();
+
+                        for (String s : personsEvents) {
+                            String substring = s.substring(0, s.indexOf(":"));
+                            personsEventTypes.add(substring);
+                        }
+
+                        List<String> strings = ExpandableListDetail.get("LIFE EVENTS");
+                        String value = strings.get(childPosition);
+                        value = value.substring(0, value.indexOf(":"));
+
+                        for (String s : personsEventTypes) {
+                            if (value.equals(s)) {
+                                for (Event e : Globals.getInstance().getEventListResult().getData()) {
+                                    if (e.getPersonID().equals(person.getPersonID()) && e.getEventType().equals(value)) {
+                                        eventIntent.putExtra("eventID", e.getEventID());
+                                        startActivity(eventIntent);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else {
+                        List<String> personsFamily = getFamily(person);
+                        List<String> personsFamilyMembersFirstNames = new ArrayList<>();
+
+                        for (String s : personsFamily) {
+                            String substring = s.substring(0, s.indexOf(" "));
+                            personsFamilyMembersFirstNames.add(substring);
+                        }
+
+                        List<String> strings = ExpandableListDetail.get("FAMILY");
+                        String value = strings.get(childPosition);
+                        value = value.substring(0, value.indexOf(" "));
+
+                        for (String s : personsFamilyMembersFirstNames) {
+                            if (value.equals(s)) {
+                                for (Person p : Globals.getInstance().getPersonListResult().getData()) {
+                                    if (p.getAssociatedUsername().equals(person.getAssociatedUsername()) && p.getFirstName().equals(value)) {
+                                        familyIntent.putExtra("personID", p.getPersonID());
+                                        startActivity(familyIntent);
+                                    }
+                                }
+                            }
+                        }
+                    }
                     return false;
                 }
             });
@@ -128,6 +171,15 @@ public class PersonActivity extends AppCompatActivity {
     private Person getPerson(String personID) {
         for (Person person : Globals.getInstance().getPersonListResult().getData()) {
             if (person.getPersonID().equals(personID)) {
+                return person;
+            }
+        }
+        return null;
+    }
+
+    private Person getPersonIDFromName(String firstName, String lastName) {
+        for (Person person : Globals.getInstance().getPersonListResult().getData()) {
+            if (person.getFirstName().equals(firstName) && person.getLastName().equals(lastName)) {
                 return person;
             }
         }
