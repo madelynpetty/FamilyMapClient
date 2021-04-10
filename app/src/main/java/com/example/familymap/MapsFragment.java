@@ -117,7 +117,7 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMarkerClickLis
         // Handle item selection
         switch (item.getItemId()) {
             case R.id.map_search:
-                Toast.makeText(getActivity(), "Calls Search", Toast.LENGTH_SHORT).show();
+                ((MainActivity) getActivity()).showSearch();
                 return true;
             case R.id.map_settings:
                 ((MainActivity) getActivity()).showSettings();
