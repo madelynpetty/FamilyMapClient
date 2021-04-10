@@ -54,7 +54,12 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMarkerClickLis
         Event loggedInBirth = getBirthEventForPerson(loggedInID);
         googleMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(loggedInBirth.getLatitude(), loggedInBirth.getLongitude())));
         googleMap.setOnMarkerClickListener(this);
-        placePins(googleMap);
+        if (Globals.getInstance().getEventForEventActivity() == null) {
+            placePins(googleMap);
+        }
+        else {
+            placeSinglePin(googleMap, Globals.getInstance().getEventForEventActivity());
+        }
     }
 
     @Override
@@ -79,7 +84,9 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMarkerClickLis
                 clickedPinPersonID = person.getPersonID();
             }
 
-            drawLines(event);
+            if (Globals.getInstance().getEventForEventActivity() == null) {
+                drawLines(event);
+            }
         }
         return false;
     }
@@ -94,9 +101,14 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMarkerClickLis
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
-        inflater.inflate(R.menu.map_menu, menu);
-        menu.findItem(R.id.map_search).setIcon( new IconDrawable(getActivity(), FontAwesomeIcons.fa_search).colorRes(R.color.white).sizeDp(40));
-        menu.findItem(R.id.map_settings).setIcon( new IconDrawable(getActivity(), FontAwesomeIcons.fa_gear).colorRes(R.color.white).sizeDp(40));
+        if (Globals.getInstance().getEventForEventActivity() == null) {
+            inflater.inflate(R.menu.map_menu, menu);
+            menu.findItem(R.id.map_search).setIcon(new IconDrawable(getActivity(), FontAwesomeIcons.fa_search).colorRes(R.color.white).sizeDp(40));
+            menu.findItem(R.id.map_settings).setIcon(new IconDrawable(getActivity(), FontAwesomeIcons.fa_gear).colorRes(R.color.white).sizeDp(40));
+        }
+        else {
+            inflater.inflate(R.menu.menu_main, menu);
+        }
     }
 
     @Override
@@ -134,15 +146,34 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMarkerClickLis
             mapFragment.getMapAsync(this);
         }
 
-        LinearLayout eventBox = (LinearLayout) getView().findViewById(R.id.eventHolder);
-        eventBox.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(getActivity(), PersonActivity.class);
-                intent.putExtra("personID", clickedPinPersonID);
-                startActivity(intent);
+        if (Globals.getInstance().getEventForEventActivity() == null) {
+            LinearLayout eventBox = (LinearLayout) getView().findViewById(R.id.eventHolder);
+            eventBox.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(getActivity(), PersonActivity.class);
+                    intent.putExtra("personID", clickedPinPersonID);
+                    startActivity(intent);
+                }
+            });
+        }
+        else {
+            Person person = getPerson(Globals.getInstance().getEventForEventActivity().getPersonID());
+            Event event = Globals.getInstance().getEventForEventActivity();
+
+            if (person != null) {
+                if (person.getGender().equals("f")) {
+                    ((ImageView) getView().findViewById(R.id.ImageField)).setImageDrawable(new IconDrawable(getActivity(), FontAwesomeIcons.fa_female).colorRes(R.color.purple_200).sizeDp(40));
+                } else {
+                    ((ImageView) getView().findViewById(R.id.ImageField)).setImageDrawable(new IconDrawable(getActivity(), FontAwesomeIcons.fa_male).colorRes(R.color.teal_200).sizeDp(40));
+                }
+
+                ((TextView) getView().findViewById(R.id.NameText)).setText(person.getFirstName() + " " + person.getLastName());
+                ((TextView) getView().findViewById(R.id.EventText)).setText(event.getEventType() +
+                        ": " + event.getCity() + ", " + event.getCountry() + " (" + event.getYear() + ")");
+                clickedPinPersonID = person.getPersonID();
             }
-        });
+        }
     }
 
     private float getEventPin(Event event) {
@@ -197,6 +228,20 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMarkerClickLis
             Marker marker = googleMap.addMarker(new MarkerOptions().position(pin).icon(BitmapDescriptorFactory.defaultMarker(getEventPin(event))));
             marker.setTag(event.getEventID());
         }
+    }
+
+    private void placeSinglePin(GoogleMap googleMap, Event event) {
+        if (Globals.getInstance().getEventListResult() == null) {
+            Toast.makeText(getContext(), "No events to display on map", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        LatLng pin = new LatLng(event.getLatitude(), event.getLongitude());
+        Marker marker = googleMap.addMarker(new MarkerOptions().position(pin).icon(BitmapDescriptorFactory.defaultMarker(getEventPin(event))));
+        marker.setTag(event.getEventID());
+
+        googleMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(event.getLatitude(), event.getLongitude())));
+
     }
 
     private Event getEvent(String eventID) {
@@ -359,4 +404,9 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMarkerClickLis
         lines.clear();
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        Globals.getInstance().setEventForEventActivity(null);
+    }
 }

@@ -74,5 +74,17 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".EventActivity"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.FamilyMap.NoActionBar" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.familymap.MainActivity" />
+            <intent-filter>
+                <action android:name="android.intent.action.EVENT" />
+            </intent-filter>
+        </activity>
+
     </application>
 </manifest>
