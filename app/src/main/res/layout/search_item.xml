@@ -7,28 +7,48 @@
     android:layout_margin="8dp"
     app:cardCornerRadius="8dp">
 
-    <RelativeLayout
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent"
+        android:layout_gravity="bottom"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:background="@android:color/white"
+        android:padding="5dp"
+        android:layout_weight="0" >
 
-        <TextView
-            android:id="@+id/search_name"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="8dp"
-            android:text="Name"
-            android:textColor="@color/black"
-            android:textSize="18sp" />
+        <ImageView
+            android:id="@+id/searchActivityImageField"
+            android:layout_width="50dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="left"
+            android:padding="5dp"/>
 
-        <TextView
-            android:id="@+id/search_description"
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/search_name"
+            android:layout_height="match_parent"
             android:padding="5dp"
-            android:text="Description"
-            android:textColor="@color/black" />
+            android:gravity="center"
+            android:orientation="vertical">
 
-    </RelativeLayout>
+            <TextView
+                android:id="@+id/search_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="8dp"
+                android:text="Name"
+                android:textColor="@color/black"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/search_description"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_below="@id/search_name"
+                android:padding="5dp"
+                android:text="Description" />
+        </RelativeLayout>
+
+    </LinearLayout>
 
 </androidx.cardview.widget.CardView>

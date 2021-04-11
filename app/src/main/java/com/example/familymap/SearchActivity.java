@@ -13,7 +13,9 @@ import android.view.MenuItem;
 import android.widget.SearchView;
 import android.widget.Toast;
 
-import java.lang.reflect.Array;
+import com.joanzapata.iconify.IconDrawable;
+import com.joanzapata.iconify.fonts.FontAwesomeIcons;
+
 import java.util.ArrayList;
 
 import Models.Event;
@@ -23,7 +25,6 @@ import Utils.Globals;
 public class SearchActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private SearchAdapter adapter;
-    private ArrayList<ListItemData> results;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,16 +72,32 @@ public class SearchActivity extends AppCompatActivity {
             if (p != null) {
                 if ((p.getFirstName() != null && p.getFirstName().toLowerCase().contains(text.toLowerCase())) ||
                         (p.getLastName() != null && p.getLastName().toLowerCase().contains(text.toLowerCase()))) {
-                    filteredList.add(new ListItemData(p.getFirstName() + " " + p.getLastName(), ""));
+                    IconDrawable image;
+                    if (p.getGender().equals("m")) {
+                        image = new IconDrawable(this, FontAwesomeIcons.fa_male).colorRes(R.color.teal_200).sizeDp(40);
+                    }
+                    else {
+                        image = new IconDrawable(this, FontAwesomeIcons.fa_female).colorRes(R.color.purple_200).sizeDp(40);
+                    }
+
+                    filteredList.add(new ListItemData(p.getFirstName() + " " + p.getLastName(), "", image));
                 }
             }
         }
 
-//        for (Event e : Globals.getInstance().getEventListResult().getData()) {
-//            if (item.getCourseName().toLowerCase().contains(text.toLowerCase())) {
-//                filteredList.add(item);
-//            }
-//        }
+        for (Event e : Globals.getInstance().getEventListResult().getData()) {
+            if (e != null) {
+                if ((e.getCountry() != null && e.getCountry().toLowerCase().contains(text.toLowerCase())) ||
+                        (e.getCity() != null && e.getCity().toLowerCase().contains(text.toLowerCase())) ||
+                        (e.getEventType() != null && e.getEventType().toLowerCase().contains(text.toLowerCase())) ||
+                        ("" + e.getYear()).contains(text.toLowerCase())) {
+                    Person p = getPersonFromPersonID(e.getPersonID());
+                    IconDrawable image = new IconDrawable(this, FontAwesomeIcons.fa_map_marker).colorRes(R.color.black).sizeDp(40);
+                    filteredList.add(new ListItemData(p.getFirstName() + " " + p.getLastName(),
+                            e.getEventType() + ": " + e.getCity() + ", " + e.getCountry() + " (" + e.getYear() + ")", image));
+                }
+            }
+        }
 
         if (filteredList.isEmpty()) {
             Toast.makeText(this, "No Data Found.", Toast.LENGTH_SHORT).show();
@@ -109,5 +126,14 @@ public class SearchActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private Person getPersonFromPersonID(String personID) {
+        for (Person p : Globals.getInstance().getPersonListResult().getData()) {
+            if (p.getPersonID().equals(personID)) {
+                return p;
+            }
+        }
+        return null;
     }
 }
