@@ -1,6 +1,7 @@
 package com.example.familymap;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -12,6 +13,7 @@ import com.joanzapata.iconify.Iconify;
 import com.joanzapata.iconify.fonts.FontAwesomeModule;
 
 import Utils.Globals;
+import Utils.Settings;
 
 public class MainActivity extends AppCompatActivity {
     private LoginFragment loginFragment = null;
@@ -25,6 +27,7 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         Iconify.with(new FontAwesomeModule());
+        retrieveSharedPreferences();
 
         if (loginFragment == null) {
             loginFragment = new LoginFragment();
@@ -67,5 +70,19 @@ public class MainActivity extends AppCompatActivity {
     public void showSearch() {
         Intent intent = new Intent(this, SearchActivity.class);
         startActivity(intent);
+    }
+
+    public void retrieveSharedPreferences() {
+        SharedPreferences shared = getSharedPreferences("familyShared", MODE_PRIVATE);
+
+        if (shared != null) {
+            Settings.getInstance().familyTreeLines = shared.getBoolean("familyTreeLines", true);
+            Settings.getInstance().lifeStoryLines = shared.getBoolean("lifeStoryLines", true);
+            Settings.getInstance().spouseLines = shared.getBoolean("spouseLines", true);
+            Settings.getInstance().fathersSide = shared.getBoolean("fathersSide", true);
+            Settings.getInstance().mothersSide = shared.getBoolean("mothersSide", true);
+            Settings.getInstance().maleEvents = shared.getBoolean("maleEvents", true);
+            Settings.getInstance().femaleEvents = shared.getBoolean("femaleEvents", true);
+        }
     }
 }

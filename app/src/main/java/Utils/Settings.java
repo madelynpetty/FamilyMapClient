@@ -1,5 +1,7 @@
 package Utils;
 
+import android.content.SharedPreferences;
+
 public class Settings {
     private static Settings instance = null;
     public boolean lifeStoryLines = true;

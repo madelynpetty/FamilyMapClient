@@ -1,6 +1,7 @@
 package com.example.familymap;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -65,27 +66,39 @@ public class SettingsActivity extends AppCompatActivity {
         CompoundButton.OnCheckedChangeListener listener = new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                SharedPreferences shared = getSharedPreferences("familyShared", MODE_PRIVATE);
+                SharedPreferences.Editor editor = shared.edit();
+
                 if (buttonView == lifeStoryLinesSwitch) {
                     Settings.getInstance().lifeStoryLines = isChecked;
+                    editor.putBoolean("lifeStoryLines", isChecked);
                 }
                 else if (buttonView == familyTreeLinesSwitch) {
                     Settings.getInstance().familyTreeLines = isChecked;
+                    editor.putBoolean("familyTreeLines", isChecked);
                 }
                 else if (buttonView == spouseLinesSwitch) {
                     Settings.getInstance().spouseLines = isChecked;
+                    editor.putBoolean("spouseLines", isChecked);
                 }
                 else if (buttonView == fathersSideSwitch) {
                     Settings.getInstance().fathersSide = isChecked;
+                    editor.putBoolean("fathersSide", isChecked);
                 }
                 else if (buttonView == mothersSideSwitch) {
                     Settings.getInstance().mothersSide = isChecked;
+                    editor.putBoolean("mothersSide", isChecked);
                 }
                 else if (buttonView == maleEventsSwitch) {
                     Settings.getInstance().maleEvents = isChecked;
+                    editor.putBoolean("maleEvents", isChecked);
                 }
                 else if (buttonView == femaleEventsSwitch) {
                     Settings.getInstance().femaleEvents = isChecked;
+                    editor.putBoolean("femaleEvents", isChecked);
                 }
+
+                editor.commit();
             }
         };
 
@@ -105,7 +118,6 @@ public class SettingsActivity extends AppCompatActivity {
                     Globals.getInstance().setLoginResult(null);
                     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);
-                    //TODO set flags to clear task or new task
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
