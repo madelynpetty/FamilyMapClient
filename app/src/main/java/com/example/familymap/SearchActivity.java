@@ -1,17 +1,18 @@
 package com.example.familymap;
 
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.widget.SearchView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.NavUtils;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import android.view.Menu;
-import android.view.MenuItem;
-import android.widget.SearchView;
-import android.widget.Toast;
 
 import com.joanzapata.iconify.IconDrawable;
 import com.joanzapata.iconify.fonts.FontAwesomeIcons;
@@ -25,6 +26,15 @@ import Utils.Globals;
 public class SearchActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private SearchAdapter adapter;
+
+    private static SearchActivity instance = null;
+
+    public static SearchActivity getInstance() {
+        if (instance == null) {
+            instance = new SearchActivity();
+        }
+        return instance;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -135,5 +145,28 @@ public class SearchActivity extends AppCompatActivity {
             }
         }
         return null;
+    }
+
+    public void showEventActivity(String name, String description, Context context) {
+        String eventType = description.substring(0, description.indexOf(":"));
+        for (Event e : Globals.getInstance().getEventListResult().getData()) {
+            Person p = getPersonFromPersonID(e.getPersonID());
+            if (e.getEventType().equals(eventType) && name.equals(p.getFirstName() + " " + p.getLastName())) {
+                Intent intent = new Intent(context, EventActivity.class);
+                intent.putExtra("eventID", e.getEventID());
+                context.startActivity(intent);
+            }
+        }
+    }
+
+    public void showPersonActivity(String name, Context context) {
+
+        for (Person p : Globals.getInstance().getPersonListResult().getData()) {
+            if (name.equals(p.getFirstName() + " " + p.getLastName())) {
+                Intent intent = new Intent(context, PersonActivity.class);
+                intent.putExtra("personID", p.getPersonID());
+                context.startActivity(intent);
+            }
+        }
     }
 }

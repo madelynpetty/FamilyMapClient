@@ -1,6 +1,8 @@
 package com.example.familymap;
 
 import android.content.Context;
+import android.content.Intent;
+import android.util.EventLog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +15,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.joanzapata.iconify.IconDrawable;
 
 import java.util.ArrayList;
+
+import Models.Event;
+import Models.Person;
+import Utils.Globals;
 
 public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder> {
     private ArrayList<ListItemData> results;
@@ -41,6 +47,18 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
         holder.name.setText(modal.name);
         holder.description.setText(modal.description);
         holder.image.setImageDrawable(modal.image);
+
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (holder.description.getText().toString().equals("")) {
+                    SearchActivity.getInstance().showPersonActivity(holder.name.getText().toString(), context);
+                }
+                else {
+                    SearchActivity.getInstance().showEventActivity(holder.name.getText().toString(), holder.description.getText().toString(), context);
+                }
+            }
+        });
     }
 
     @Override
