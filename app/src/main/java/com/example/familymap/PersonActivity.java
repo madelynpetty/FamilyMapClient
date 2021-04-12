@@ -14,7 +14,6 @@ import android.widget.ExpandableListAdapter;
 import android.widget.ExpandableListView;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.joanzapata.iconify.IconDrawable;
 import com.joanzapata.iconify.fonts.FontAwesomeIcons;
@@ -27,9 +26,7 @@ import java.util.List;
 
 import Models.Event;
 import Models.Person;
-import Result.PersonListResult;
 import Utils.Globals;
-import Utils.Settings;
 
 public class PersonActivity extends AppCompatActivity {
 
@@ -55,19 +52,17 @@ public class PersonActivity extends AppCompatActivity {
             ((TextView) findViewById(R.id.personLastName)).setText(person.getLastName());
             if (person.getGender().equals("m")) {
                 ((TextView) findViewById(R.id.personGender)).setText("Male");
-            }
-            else {
+            } else {
                 ((TextView) findViewById(R.id.personGender)).setText("Female");
             }
 
             ExpandableListView expandableListView = (ExpandableListView) findViewById(R.id.expandableList);
-            ImageView image = findViewById(R.id.personActivityImageField);
 
-            HashMap<String, List<String>> ExpandableListDetail = new HashMap<>();
+            HashMap<String, List<ListItemData>> ExpandableListDetail = new HashMap<>();
             ExpandableListDetail.put("LIFE EVENTS", getEventsForPersonInOrder(person));
             ExpandableListDetail.put("FAMILY", getFamily(person));
 
-            ArrayList<String> expandableListTitle = new ArrayList<String>(ExpandableListDetail.keySet());
+            ArrayList<String> expandableListTitle = new ArrayList<>(ExpandableListDetail.keySet());
             ExpandableListAdapter expandableListAdapter = new CustomExpandableListAdapter(this, expandableListTitle, ExpandableListDetail);
 
             expandableListView.setAdapter(expandableListAdapter);
@@ -92,46 +87,45 @@ public class PersonActivity extends AppCompatActivity {
                 public boolean onChildClick(ExpandableListView parent, View v,
                                             int groupPosition, int childPosition, long id) {
                     if (groupPosition == 0) {
-                        List<String> personsEvents = getEventsForPersonInOrder(person);
+                        List<ListItemData> personsEvents = getEventsForPersonInOrder(person);
                         List<String> personsEventTypes = new ArrayList<>();
 
-                        for (String s : personsEvents) {
-                            String substring = s.substring(0, s.indexOf(":"));
+                        for (ListItemData l : personsEvents) {
+                            String substring = l.description.substring(0, l.description.indexOf(":"));
                             personsEventTypes.add(substring);
                         }
 
-                        List<String> strings = ExpandableListDetail.get("LIFE EVENTS");
-                        String value = strings.get(childPosition);
-                        value = value.substring(0, value.indexOf(":"));
+                        List<ListItemData> items = ExpandableListDetail.get("LIFE EVENTS");
+                        ListItemData value = items.get(childPosition);
+                        String event = value.description.substring(0, value.description.indexOf(":"));
 
                         for (String s : personsEventTypes) {
-                            if (value.equals(s)) {
+                            if (event.equals(s)) {
                                 for (Event e : Globals.getInstance().getEventListResult().getData()) {
-                                    if (e.getPersonID().equals(person.getPersonID()) && e.getEventType().equals(value)) {
+                                    if (e.getPersonID().equals(person.getPersonID()) && e.getEventType().equals(event)) {
                                         eventIntent.putExtra("eventID", e.getEventID());
                                         startActivity(eventIntent);
                                     }
                                 }
                             }
                         }
-                    }
-                    else {
-                        List<String> personsFamily = getFamily(person);
+                    } else {
+                        List<ListItemData> personsFamily = getFamily(person);
                         List<String> personsFamilyMembersFirstNames = new ArrayList<>();
 
-                        for (String s : personsFamily) {
-                            String substring = s.substring(0, s.indexOf(" "));
+                        for (ListItemData s : personsFamily) {
+                            String substring = s.name.substring(0, s.name.indexOf(" "));
                             personsFamilyMembersFirstNames.add(substring);
                         }
 
-                        List<String> strings = ExpandableListDetail.get("FAMILY");
-                        String value = strings.get(childPosition);
-                        value = value.substring(0, value.indexOf(" "));
+                        List<ListItemData> strings = ExpandableListDetail.get("FAMILY");
+                        ListItemData value = strings.get(childPosition);
+                        String name = value.name.substring(0, value.name.indexOf(" "));
 
                         for (String s : personsFamilyMembersFirstNames) {
-                            if (value.equals(s)) {
+                            if (name.equals(s)) {
                                 for (Person p : Globals.getInstance().getPersonListResult().getData()) {
-                                    if (p.getAssociatedUsername().equals(person.getAssociatedUsername()) && p.getFirstName().equals(value)) {
+                                    if (p.getAssociatedUsername().equals(person.getAssociatedUsername()) && p.getFirstName().equals(name)) {
                                         familyIntent.putExtra("personID", p.getPersonID());
                                         startActivity(familyIntent);
                                     }
@@ -142,11 +136,6 @@ public class PersonActivity extends AppCompatActivity {
                     return false;
                 }
             });
-
-
-            //TODO code for the icons
-            //((ImageView) findViewById(R.id.ImageField)).setImageDrawable(new IconDrawable(this, FontAwesomeIcons.fa_male).colorRes(R.color.teal_200).sizeDp(40));
-            //((ImageView) findViewById(R.id.ImageField)).setImageDrawable(new IconDrawable(this, FontAwesomeIcons.fa_female).colorRes(R.color.purple_200).sizeDp(40));
         }
     }
 
@@ -186,7 +175,7 @@ public class PersonActivity extends AppCompatActivity {
         return null;
     }
 
-    private List<String> getEventsForPersonInOrder(Person person) {
+    private List<ListItemData> getEventsForPersonInOrder(Person person) {
         ArrayList<Event> events = new ArrayList<>();
         for (Event event : Globals.getInstance().getEventListResult().getData()) {
             if (event.getPersonID().equals(person.getPersonID())) {
@@ -201,41 +190,68 @@ public class PersonActivity extends AppCompatActivity {
             }
         });
 
-        List<String> strings = new ArrayList<>();
+        List<ListItemData> data = new ArrayList<>();
 
         for (Event e : events) {
-            strings.add(e.getEventType() + ": " + e.getCity() + ", " + e.getCountry() + " (" + e.getYear() + ")");
+            Person p = getPersonFromPersonID(e.getPersonID());
+            IconDrawable image = new IconDrawable(this, FontAwesomeIcons.fa_map_marker).colorRes(R.color.black).sizeDp(40);
+            data.add(new ListItemData(p.getFirstName() + " " + p.getLastName(), e.getEventType() + ": " + e.getCity() + ", " + e.getCountry() + " (" + e.getYear() + ")", image));
         }
 
-        return strings;
+        return data;
     }
 
-    private List<String> getFamily(Person person) {
-        List<String> family = new ArrayList<>();
+    private List<ListItemData> getFamily(Person person) {
+        List<ListItemData> family = new ArrayList<>();
 
         if (person.getFatherID() != null) {
             Person dad = getPerson(person.getFatherID());
-            family.add(dad.getFirstName() + " " + dad.getLastName() + "\nFather");
+            IconDrawable image = new IconDrawable(this, FontAwesomeIcons.fa_male).colorRes(R.color.teal_200).sizeDp(40);
+            family.add(new ListItemData(dad.getFirstName() + " " + dad.getLastName() + "\nFather", "", image));
         }
 
         if (person.getMotherID() != null) {
             Person mom = getPerson(person.getMotherID());
-            family.add(mom.getFirstName() + " " + mom.getLastName() + "\nMother");
+            IconDrawable image = new IconDrawable(this, FontAwesomeIcons.fa_female).colorRes(R.color.purple_200).sizeDp(40);
+            family.add(new ListItemData(mom.getFirstName() + " " + mom.getLastName() + "\nMother", "", image));
         }
 
         if (person.getSpouseID() != null) {
             Person spouse = getPerson(person.getSpouseID());
-            family.add(spouse.getFirstName() + " " + spouse.getLastName() + "\nSpouse");
+            IconDrawable image;
+            if (spouse.getGender().equals("m")) {
+                image = new IconDrawable(this, FontAwesomeIcons.fa_male).colorRes(R.color.teal_200).sizeDp(40);
+            }
+            else {
+                image = new IconDrawable(this, FontAwesomeIcons.fa_female).colorRes(R.color.purple_200).sizeDp(40);
+            }
+            family.add(new ListItemData(spouse.getFirstName() + " " + spouse.getLastName() + "\nSpouse", "", image));
         }
 
         for (Person p : Globals.getInstance().getPersonListResult().getData()) {
             if (p != null) {
                 if ((p.getFatherID() != null && p.getFatherID().equals(person.getPersonID())) || (p.getMotherID() != null && p.getMotherID().equals(person.getPersonID()))) {
-                    family.add(p.getFirstName() + " " + p.getLastName() + "\nChild");
+                    IconDrawable image;
+                    if (p.getGender().equals("m")) {
+                        image = new IconDrawable(this, FontAwesomeIcons.fa_male).colorRes(R.color.teal_200).sizeDp(40);
+                    }
+                    else {
+                        image = new IconDrawable(this, FontAwesomeIcons.fa_female).colorRes(R.color.purple_200).sizeDp(40);
+                    }
+                    family.add(new ListItemData(p.getFirstName() + " " + p.getLastName() + "\nChild", "", image));
                 }
             }
         }
 
         return family;
+    }
+
+    private Person getPersonFromPersonID(String personID) {
+        for (Person p : Globals.getInstance().getPersonListResult().getData()) {
+            if (p.getPersonID().equals(personID)) {
+                return p;
+            }
+        }
+        return null;
     }
 }

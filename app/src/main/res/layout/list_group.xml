@@ -1,21 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+    android:id="@+id/expandedListItem"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+    android:layout_height="match_parent"
+    android:layout_gravity="bottom"
+    android:gravity="center"
+    android:orientation="horizontal"
+    android:background="@android:color/white"
+    android:padding="5dp"
+    android:layout_weight="0"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
     <ImageView
         android:id="@+id/personActivityImageField"
         android:layout_width="50dp"
         android:layout_height="match_parent"
+        android:layout_gravity="left"
         android:padding="5dp"/>
-    <TextView
-        android:id="@+id/listTitle"
+
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingLeft="?android:attr/expandableListPreferredItemPaddingLeft"
-        android:textColor="@android:color/black"
-        android:paddingTop="10dp"
-        android:paddingBottom="10dp" />
+        android:padding="5dp"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/person_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            android:text="Name"
+            android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/person_description"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@id/person_name"
+            android:padding="5dp"
+            android:text="Description" />
+    </RelativeLayout>
+
 </LinearLayout>
