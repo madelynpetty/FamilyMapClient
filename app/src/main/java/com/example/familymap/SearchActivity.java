@@ -160,7 +160,6 @@ public class SearchActivity extends AppCompatActivity {
     }
 
     public void showPersonActivity(String name, Context context) {
-
         for (Person p : Globals.getInstance().getPersonListResult().getData()) {
             if (name.equals(p.getFirstName() + " " + p.getLastName())) {
                 Intent intent = new Intent(context, PersonActivity.class);
