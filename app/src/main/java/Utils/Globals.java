@@ -1,11 +1,16 @@
 package Utils;
 
-import android.app.Application;
+import com.example.familymap.ListItemData;
+import com.google.android.gms.maps.model.Marker;
+
+import java.util.ArrayList;
 
 import Models.Event;
+import Request.RegisterRequest;
 import Result.EventListResult;
 import Result.LoginResult;
 import Result.PersonListResult;
+import Result.RegisterResult;
 
 public class Globals {
     private static Globals instance = null;
@@ -16,6 +21,9 @@ public class Globals {
     private EventListResult eventListResult = null;
     private PersonListResult personListResult = null;
     private Event eventForEventActivity = null;
+    private Marker activeMarker = null;
+
+    private ArrayList<ListItemData> filteredList = null; //for testing purposes
 
     public static Globals getInstance() {
         if (instance == null) {
@@ -72,4 +80,19 @@ public class Globals {
         this.eventForEventActivity = event;
     }
 
+    public Marker getActiveMarker() {
+        return activeMarker;
+    }
+
+    public void setActiveMarker(Marker activeMarker) {
+        this.activeMarker = activeMarker;
+    }
+
+    public ArrayList<ListItemData> getFilteredList() {
+        return filteredList;
+    }
+
+    public void setFilteredList(ArrayList<ListItemData> filteredList) {
+        this.filteredList = filteredList;
+    }
 }

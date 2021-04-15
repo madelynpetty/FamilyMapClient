@@ -31,6 +31,15 @@ import Utils.Settings;
 
 public class PersonActivity extends AppCompatActivity {
 
+    private static PersonActivity instance = null;
+
+    public static PersonActivity getInstance() {
+        if (instance == null) {
+            instance = new PersonActivity();
+        }
+        return instance;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -60,8 +69,8 @@ public class PersonActivity extends AppCompatActivity {
             ExpandableListView expandableListView = (ExpandableListView) findViewById(R.id.expandableList);
 
             HashMap<String, List<ListItemData>> ExpandableListDetail = new HashMap<>();
-            ExpandableListDetail.put("LIFE EVENTS", getEventsForPersonInOrder(person));
-            ExpandableListDetail.put("FAMILY", getFamily(person));
+            ExpandableListDetail.put("LIFE EVENTS", getEventsForPersonInOrder(person, true));
+            ExpandableListDetail.put("FAMILY", getFamily(person, true));
 
             ArrayList<String> expandableListTitle = new ArrayList<>(ExpandableListDetail.keySet());
             ExpandableListAdapter expandableListAdapter = new CustomExpandableListAdapter(this, expandableListTitle, ExpandableListDetail);
@@ -76,7 +85,6 @@ public class PersonActivity extends AppCompatActivity {
             });
 
             expandableListView.setOnGroupCollapseListener(new ExpandableListView.OnGroupCollapseListener() {
-
                 @Override
                 public void onGroupCollapse(int groupPosition) {
                     //DO NOTHING
@@ -88,7 +96,7 @@ public class PersonActivity extends AppCompatActivity {
                 public boolean onChildClick(ExpandableListView parent, View v,
                                             int groupPosition, int childPosition, long id) {
                     if (groupPosition == 0) {
-                        List<ListItemData> personsEvents = getEventsForPersonInOrder(person);
+                        List<ListItemData> personsEvents = getEventsForPersonInOrder(person, true);
                         List<String> personsEventTypes = new ArrayList<>();
 
                         for (ListItemData l : personsEvents) {
@@ -111,7 +119,7 @@ public class PersonActivity extends AppCompatActivity {
                             }
                         }
                     } else {
-                        List<ListItemData> personsFamily = getFamily(person);
+                        List<ListItemData> personsFamily = getFamily(person, true);
                         List<String> personsFamilyMembersFirstNames = new ArrayList<>();
 
                         for (ListItemData s : personsFamily) {
@@ -167,7 +175,7 @@ public class PersonActivity extends AppCompatActivity {
         return null;
     }
 
-    private List<ListItemData> getEventsForPersonInOrder(Person person) {
+    public List<ListItemData> getEventsForPersonInOrder(Person person, boolean doColor) {
         ArrayList<Event> events = new ArrayList<>();
         ArrayList<Person> momsSide = getMomsSide(getPerson(Globals.getInstance().getLoginResult().personID));
         ArrayList<Person> dadsSide = getDadsSide(getPerson(Globals.getInstance().getLoginResult().personID));
@@ -193,55 +201,42 @@ public class PersonActivity extends AppCompatActivity {
 
         for (Event e : events) {
             Person p = getPersonFromPersonID(e.getPersonID());
-            IconDrawable image = new IconDrawable(this, FontAwesomeIcons.fa_map_marker).colorRes(R.color.black).sizeDp(40);
+            IconDrawable image = null;
+            if (doColor) {
+                image = new IconDrawable(this, FontAwesomeIcons.fa_map_marker).colorRes(R.color.black).sizeDp(40);
+            }
             data.add(new ListItemData(p.getFirstName() + " " + p.getLastName(), e.getEventType() + ": " + e.getCity() + ", " + e.getCountry() + " (" + e.getYear() + ")", image));
         }
 
         return data;
     }
 
-    private List<ListItemData> getFamily(Person person) {
+    public List<ListItemData> getFamily(Person person, boolean doImage) {
         List<ListItemData> family = new ArrayList<>();
-        ArrayList<Person> momsSide = getMomsSide(getPerson(Globals.getInstance().getLoginResult().personID));
-        ArrayList<Person> dadsSide = getDadsSide(getPerson(Globals.getInstance().getLoginResult().personID));
 
         if (person.getFatherID() != null) {
             Person dad = getPerson(person.getFatherID());
-            if (Settings.getInstance().maleEvents &&
-                    ((Settings.getInstance().mothersSide && momsSide.contains(dad)) || !Settings.getInstance().mothersSide) &&
-                    ((Settings.getInstance().fathersSide && dadsSide.contains(dad)) || !Settings.getInstance().fathersSide)) {
-                IconDrawable image = new IconDrawable(this, FontAwesomeIcons.fa_male).colorRes(R.color.teal_200).sizeDp(40);
-                family.add(new ListItemData(dad.getFirstName() + " " + dad.getLastName() + "\nFather", "", image));
-            }
+            IconDrawable image = null;
+            if (doImage) image = new IconDrawable(this, FontAwesomeIcons.fa_male).colorRes(R.color.teal_200).sizeDp(40);
+            family.add(new ListItemData(dad.getFirstName() + " " + dad.getLastName() + "\nFather", "", image));
         }
 
         if (person.getMotherID() != null) {
             Person mom = getPerson(person.getMotherID());
-            if (Settings.getInstance().femaleEvents &&
-                    ((Settings.getInstance().mothersSide && momsSide.contains(mom)) || !Settings.getInstance().mothersSide) &&
-                    ((Settings.getInstance().fathersSide && dadsSide.contains(mom)) || !Settings.getInstance().fathersSide)) {
-                IconDrawable image = new IconDrawable(this, FontAwesomeIcons.fa_female).colorRes(R.color.purple_200).sizeDp(40);
-                family.add(new ListItemData(mom.getFirstName() + " " + mom.getLastName() + "\nMother", "", image));
-            }
+            IconDrawable image = null;
+            if (doImage) image = new IconDrawable(this, FontAwesomeIcons.fa_female).colorRes(R.color.purple_200).sizeDp(40);
+            family.add(new ListItemData(mom.getFirstName() + " " + mom.getLastName() + "\nMother", "", image));
         }
 
         if (person.getSpouseID() != null) {
             Person spouse = getPerson(person.getSpouseID());
-            IconDrawable image;
+            IconDrawable image = null;
             if (spouse.getGender().equals("m")) {
-                if (Settings.getInstance().maleEvents &&
-                        ((Settings.getInstance().mothersSide && momsSide.contains(spouse)) || !Settings.getInstance().mothersSide) &&
-                        ((Settings.getInstance().fathersSide && dadsSide.contains(spouse)) || !Settings.getInstance().fathersSide)) {
-                    image = new IconDrawable(this, FontAwesomeIcons.fa_male).colorRes(R.color.teal_200).sizeDp(40);
-                    family.add(new ListItemData(spouse.getFirstName() + " " + spouse.getLastName() + "\nSpouse", "", image));
-                }
+                if (doImage) image = new IconDrawable(this, FontAwesomeIcons.fa_male).colorRes(R.color.teal_200).sizeDp(40);
+                family.add(new ListItemData(spouse.getFirstName() + " " + spouse.getLastName() + "\nSpouse", "", image));
             } else {
-                if (Settings.getInstance().femaleEvents &&
-                        ((Settings.getInstance().mothersSide && momsSide.contains(spouse)) || !Settings.getInstance().mothersSide) &&
-                        ((Settings.getInstance().fathersSide && dadsSide.contains(spouse)) || !Settings.getInstance().fathersSide)) {
-                    image = new IconDrawable(this, FontAwesomeIcons.fa_female).colorRes(R.color.purple_200).sizeDp(40);
-                    family.add(new ListItemData(spouse.getFirstName() + " " + spouse.getLastName() + "\nSpouse", "", image));
-                }
+                if (doImage) image = new IconDrawable(this, FontAwesomeIcons.fa_female).colorRes(R.color.purple_200).sizeDp(40);
+                family.add(new ListItemData(spouse.getFirstName() + " " + spouse.getLastName() + "\nSpouse", "", image));
             }
         }
 
@@ -249,27 +244,32 @@ public class PersonActivity extends AppCompatActivity {
         for (Person p : Globals.getInstance().getPersonListResult().getData()) {
             if (p != null) {
                 if ((p.getFatherID() != null && p.getFatherID().equals(person.getPersonID())) || (p.getMotherID() != null && p.getMotherID().equals(person.getPersonID()))) {
-                    IconDrawable i;
+                    IconDrawable i = null;
                     if (p.getGender().equals("m")) {
-                        if (Settings.getInstance().maleEvents &&
-                                ((Settings.getInstance().mothersSide && momsSide.contains(p)) || !Settings.getInstance().mothersSide) &&
-                                ((Settings.getInstance().fathersSide && dadsSide.contains(p)) || !Settings.getInstance().fathersSide)) {
-                            i = new IconDrawable(this, FontAwesomeIcons.fa_male).colorRes(R.color.teal_200).sizeDp(40);
-                            family.add(new ListItemData(p.getFirstName() + " " + p.getLastName() + "\nChild", "", i));
-                        }
+                        if (doImage) i = new IconDrawable(this, FontAwesomeIcons.fa_male).colorRes(R.color.teal_200).sizeDp(40);
+                        family.add(new ListItemData(p.getFirstName() + " " + p.getLastName() + "\nChild", "", i));
                     } else {
-                        if (Settings.getInstance().femaleEvents &&
-                                ((Settings.getInstance().mothersSide && momsSide.contains(p)) || !Settings.getInstance().mothersSide) &&
-                                ((Settings.getInstance().fathersSide && dadsSide.contains(p)) || !Settings.getInstance().fathersSide)) {
-                            i = new IconDrawable(this, FontAwesomeIcons.fa_female).colorRes(R.color.purple_200).sizeDp(40);
-                            family.add(new ListItemData(p.getFirstName() + " " + p.getLastName() + "\nChild", "", i));
-                        }
+                        if (doImage) i = new IconDrawable(this, FontAwesomeIcons.fa_female).colorRes(R.color.purple_200).sizeDp(40);
+                        family.add(new ListItemData(p.getFirstName() + " " + p.getLastName() + "\nChild", "", i));
                     }
                 }
             }
         }
         return family;
     }
+
+//    private boolean filterPersonOut(Person person) {
+//        boolean include = false;
+//        ArrayList<Person> momsSide = getMomsSide(getPerson(Globals.getInstance().getLoginResult().personID));
+//        ArrayList<Person> dadsSide = getDadsSide(getPerson(Globals.getInstance().getLoginResult().personID));
+//
+//        if (!Settings.getInstance().maleEvents && person.getGender().equals("m")) include = true;
+//        if (!Settings.getInstance().femaleEvents && person.getGender().equals("f")) include = true;
+//        if (!Settings.getInstance().mothersSide && momsSide.contains(person)) include = true;
+//        if (!Settings.getInstance().fathersSide && dadsSide.contains(person)) include = true;
+//
+//        return include;
+//    }
 
     private Person getPersonFromPersonID(String personID) {
         for (Person p : Globals.getInstance().getPersonListResult().getData()) {

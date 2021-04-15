@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import Models.Event;
 import Models.Person;
 import Utils.Globals;
+import Utils.Settings;
 
 public class SearchActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
@@ -68,26 +69,28 @@ public class SearchActivity extends AppCompatActivity {
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                filter(newText);
+                filter(newText, true);
                 return false;
             }
         });
         return true;
     }
 
-    private void filter(String text) {
+    public void filter(String text, boolean doImage) {
         ArrayList<ListItemData> filteredList = new ArrayList<>();
+//        ArrayList<Person> momsSide = getMomsSide(getPerson(Globals.getInstance().getLoginResult().personID));
+//        ArrayList<Person> dadsSide = getDadsSide(getPerson(Globals.getInstance().getLoginResult().personID));
 
         for (Person p : Globals.getInstance().getPersonListResult().getData()) {
             if (p != null) {
                 if ((p.getFirstName() != null && p.getFirstName().toLowerCase().contains(text.toLowerCase())) ||
                         (p.getLastName() != null && p.getLastName().toLowerCase().contains(text.toLowerCase()))) {
-                    IconDrawable image;
+                    IconDrawable image = null;
                     if (p.getGender().equals("m")) {
-                        image = new IconDrawable(this, FontAwesomeIcons.fa_male).colorRes(R.color.teal_200).sizeDp(40);
+                        if (doImage) image = new IconDrawable(this, FontAwesomeIcons.fa_male).colorRes(R.color.teal_200).sizeDp(40);
                     }
                     else {
-                        image = new IconDrawable(this, FontAwesomeIcons.fa_female).colorRes(R.color.purple_200).sizeDp(40);
+                        if (doImage) image = new IconDrawable(this, FontAwesomeIcons.fa_female).colorRes(R.color.purple_200).sizeDp(40);
                     }
 
                     filteredList.add(new ListItemData(p.getFirstName() + " " + p.getLastName(), "", image));
@@ -102,18 +105,34 @@ public class SearchActivity extends AppCompatActivity {
                         (e.getEventType() != null && e.getEventType().toLowerCase().contains(text.toLowerCase())) ||
                         ("" + e.getYear()).contains(text.toLowerCase())) {
                     Person p = getPersonFromPersonID(e.getPersonID());
-                    IconDrawable image = new IconDrawable(this, FontAwesomeIcons.fa_map_marker).colorRes(R.color.black).sizeDp(40);
-                    filteredList.add(new ListItemData(p.getFirstName() + " " + p.getLastName(),
-                            e.getEventType() + ": " + e.getCity() + ", " + e.getCountry() + " (" + e.getYear() + ")", image));
+
+                    if (!filterPersonOut(p)) {
+                        IconDrawable image = new IconDrawable(this, FontAwesomeIcons.fa_map_marker).colorRes(R.color.black).sizeDp(40);
+                        filteredList.add(new ListItemData(p.getFirstName() + " " + p.getLastName(),
+                                e.getEventType() + ": " + e.getCity() + ", " + e.getCountry() + " (" + e.getYear() + ")", image));
+                    }
                 }
             }
         }
 
         if (filteredList.isEmpty()) {
-            Toast.makeText(this, "No Data Found.", Toast.LENGTH_SHORT).show();
+            if (doImage) Toast.makeText(this, "No Data Found.", Toast.LENGTH_SHORT).show();
         }
-        adapter.filterList(filteredList);
+        Globals.getInstance().setFilteredList(filteredList);
+        if (doImage) adapter.filterList(filteredList);
+    }
 
+    private boolean filterPersonOut(Person person) {
+        boolean include = false;
+        ArrayList<Person> momsSide = getMomsSide(getPerson(Globals.getInstance().getLoginResult().personID));
+        ArrayList<Person> dadsSide = getDadsSide(getPerson(Globals.getInstance().getLoginResult().personID));
+
+        if (!Settings.getInstance().maleEvents && person.getGender().equals("m")) include = true;
+        if (!Settings.getInstance().femaleEvents && person.getGender().equals("f")) include = true;
+        if (!Settings.getInstance().mothersSide && momsSide.contains(person)) include = true;
+        if (!Settings.getInstance().fathersSide && dadsSide.contains(person)) include = true;
+
+        return include;
     }
 
     private void buildRecyclerView() {
@@ -167,5 +186,46 @@ public class SearchActivity extends AppCompatActivity {
                 context.startActivity(intent);
             }
         }
+    }
+
+    private ArrayList<Person> getMomsSide(Person person) {
+        ArrayList<Person> momsSide = new ArrayList<>();
+
+        if (person.getMotherID() != null) {
+            Person mom = getPerson(person.getMotherID());
+            Person dad = getPerson(person.getFatherID());
+            momsSide.add(mom);
+            if (!person.getPersonID().equals(Globals.getInstance().getLoginResult().personID)) {
+                momsSide.add(dad);
+                momsSide.addAll(getMomsSide(dad));
+            }
+            momsSide.addAll(getMomsSide(mom));
+        }
+        return momsSide;
+    }
+
+    private ArrayList<Person> getDadsSide(Person person) {
+        ArrayList<Person> momsSide = new ArrayList<>();
+
+        if (person.getMotherID() != null) {
+            Person mom = getPerson(person.getMotherID());
+            Person dad = getPerson(person.getFatherID());
+            momsSide.add(mom);
+            if (!person.getPersonID().equals(Globals.getInstance().getLoginResult().personID)) {
+                momsSide.add(dad);
+                momsSide.addAll(getMomsSide(dad));
+            }
+            momsSide.addAll(getMomsSide(mom));
+        }
+        return momsSide;
+    }
+
+    private Person getPerson(String personID) {
+        for (Person person : Globals.getInstance().getPersonListResult().getData()) {
+            if (person.getPersonID().equals(personID)) {
+                return person;
+            }
+        }
+        return null;
     }
 }

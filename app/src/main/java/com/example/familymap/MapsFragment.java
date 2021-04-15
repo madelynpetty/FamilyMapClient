@@ -41,11 +41,19 @@ import Models.Event;
 import Models.Person;
 import Utils.Globals;
 import Utils.Settings;
-
 public class MapsFragment extends Fragment implements GoogleMap.OnMarkerClickListener, OnMapReadyCallback {
     private GoogleMap googleMap = null;
-    private ArrayList<Polyline> lines = new ArrayList<>();
+    private final ArrayList<Polyline> lines = new ArrayList<>();
     private String clickedPinPersonID;
+
+    private static MapsFragment instance = null;
+
+    public static MapsFragment getInstance() {
+        if (instance == null) {
+            instance = new MapsFragment();
+        }
+        return instance;
+    }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -54,17 +62,33 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMarkerClickLis
         Event loggedInBirth = getBirthEventForPerson(loggedInID);
         googleMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(loggedInBirth.getLatitude(), loggedInBirth.getLongitude())));
         googleMap.setOnMarkerClickListener(this);
+
         if (Globals.getInstance().getEventForEventActivity() == null) {
             placePins(googleMap);
+            if (Globals.getInstance().getActiveMarker() != null) {
+                Event event = getEvent((String)Globals.getInstance().getActiveMarker().getTag());
+                Person person = getPerson(event.getPersonID());
+                if (includePerson(person)) {
+                    onMarkerClick(Globals.getInstance().getActiveMarker());
+                    Event e = getEvent((String) Globals.getInstance().getActiveMarker().getTag());
+                    googleMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(e.getLatitude(), e.getLongitude())));
+                }
+            }
         }
         else {
-            placePins(googleMap);
-            LatLng pin = new LatLng(Globals.getInstance().getEventForEventActivity().getLatitude(), Globals.getInstance().getEventForEventActivity().getLongitude());
-            Marker marker = googleMap.addMarker(new MarkerOptions().position(pin).icon(BitmapDescriptorFactory.defaultMarker(getEventPin(Globals.getInstance().getEventForEventActivity()))));
-            marker.setTag(Globals.getInstance().getEventForEventActivity().getEventID());
+            Person person = getPerson(Globals.getInstance().getEventForEventActivity().getPersonID());
+            if (!includePerson(person)) {
+                placePins(googleMap);
+            }
+            else {
+                placePins(googleMap);
+                LatLng pin = new LatLng(Globals.getInstance().getEventForEventActivity().getLatitude(), Globals.getInstance().getEventForEventActivity().getLongitude());
+                Marker marker = googleMap.addMarker(new MarkerOptions().position(pin).icon(BitmapDescriptorFactory.defaultMarker(getEventPin(Globals.getInstance().getEventForEventActivity()))));
+                marker.setTag(Globals.getInstance().getEventForEventActivity().getEventID());
 
-            googleMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(Globals.getInstance().getEventForEventActivity().getLatitude(), Globals.getInstance().getEventForEventActivity().getLongitude())));
-            drawLines(Globals.getInstance().getEventForEventActivity());
+                googleMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(Globals.getInstance().getEventForEventActivity().getLatitude(), Globals.getInstance().getEventForEventActivity().getLongitude())));
+                drawLines(Globals.getInstance().getEventForEventActivity());
+            }
         }
     }
 
@@ -90,6 +114,7 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMarkerClickLis
                 clickedPinPersonID = person.getPersonID();
             }
 
+            Globals.getInstance().setActiveMarker(marker);
             drawLines(event);
         }
         return false;
@@ -143,8 +168,7 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMarkerClickLis
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        SupportMapFragment mapFragment =
-                (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.fragment_maps);
+        SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.fragment_maps);
         if (mapFragment != null) {
             mapFragment.getMapAsync(this);
         }
@@ -226,7 +250,6 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMarkerClickLis
             if (!Settings.getInstance().mothersSide && momsSide.contains(person)) continue;
             if (!Settings.getInstance().fathersSide && dadsSide.contains(person)) continue;
 
-
             LatLng pin = new LatLng(event.getLatitude(), event.getLongitude());
             Marker marker = googleMap.addMarker(new MarkerOptions().position(pin).icon(BitmapDescriptorFactory.defaultMarker(getEventPin(event))));
             marker.setTag(event.getEventID());
@@ -270,7 +293,7 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMarkerClickLis
         return null;
     }
 
-    private ArrayList<Person> getMomsSide(Person person) {
+    public ArrayList<Person> getMomsSide(Person person) {
         ArrayList<Person> momsSide = new ArrayList<>();
 
         if (person.getMotherID() != null) {
@@ -286,7 +309,7 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMarkerClickLis
         return momsSide;
     }
 
-    private ArrayList<Person> getDadsSide(Person person) {
+    public ArrayList<Person> getDadsSide(Person person) {
         ArrayList<Person> momsSide = new ArrayList<>();
 
         if (person.getMotherID() != null) {
@@ -365,7 +388,7 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMarkerClickLis
 
     private void drawLines(Event event) {
         Person person = getPerson(event.getPersonID());
-        if (Settings.getInstance().spouseLines) {
+        if (Settings.getInstance().spouseLines && (!Settings.getInstance().maleEvents || !Settings.getInstance().femaleEvents)) {
             if (person.getSpouseID() != null) {
                 Event spouseEvent = getEarliestEvent(getPerson(person.getSpouseID()));
                 if (spouseEvent != null) {
@@ -384,6 +407,19 @@ public class MapsFragment extends Fragment implements GoogleMap.OnMarkerClickLis
         if (Settings.getInstance().lifeStoryLines) {
             drawLifeStoryLines(getPerson(event.getPersonID()));
         }
+    }
+
+    private boolean includePerson(Person person) {
+        boolean include = true;
+        ArrayList<Person> momsSide = getMomsSide(getPerson(Globals.getInstance().getLoginResult().personID));
+        ArrayList<Person> dadsSide = getDadsSide(getPerson(Globals.getInstance().getLoginResult().personID));
+
+        if (!Settings.getInstance().maleEvents && person.getGender().equals("m")) include = false;
+        if (!Settings.getInstance().femaleEvents && person.getGender().equals("f")) include = false;
+        if (!Settings.getInstance().mothersSide && momsSide.contains(person)) include = false;
+        if (!Settings.getInstance().fathersSide && dadsSide.contains(person)) include = false;
+
+        return include;
     }
 
     private void clearLines() {
